@@ -8,6 +8,7 @@ import {
   DollarSign,
   Wallet,
   Package,
+  Layers,
   ChevronLeft,
   ChevronRight,
   Building2,
@@ -21,6 +22,7 @@ const menuItems = [
   { label: "Liquidações", icon: DollarSign, path: "/liquidacoes" },
   { label: "Saldo de Empenho", icon: Wallet, path: "/saldo-empenho" },
   { label: "Produtos/Serviços", icon: Package, path: "/produtos-servicos" },
+  { label: "Lotes", icon: Layers, path: "/lotes" },
 ];
 
 export const AppSidebar = () => {
