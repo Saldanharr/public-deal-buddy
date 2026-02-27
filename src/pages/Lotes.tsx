@@ -39,8 +39,14 @@ interface ProdutoServico {
   descricao: string;
 }
 
+interface ContratoRef {
+  id: string;
+  numero: string;
+}
+
 interface Lote {
   id: string;
+  contratoId: string;
   produtoServicoId: string;
   valor: number;
   previsaoEntrega: string;
@@ -54,9 +60,15 @@ const produtosServicos: ProdutoServico[] = [
   { id: "3", tipo: "Equipamento", subtipo: "Informática", descricao: "Computadores, monitores e periféricos" },
 ];
 
+const contratosMock: ContratoRef[] = [
+  { id: "1", numero: "CT-2024-000001" },
+  { id: "2", numero: "CT-2024-000002" },
+];
+
 const initialLotes: Lote[] = [
   {
     id: "1",
+    contratoId: "1",
     produtoServicoId: "1",
     valor: 25000.5000,
     previsaoEntrega: "2024-06-30",
@@ -65,6 +77,7 @@ const initialLotes: Lote[] = [
   },
   {
     id: "2",
+    contratoId: "1",
     produtoServicoId: "3",
     valor: 87500.0000,
     previsaoEntrega: "2024-08-15",
@@ -73,6 +86,7 @@ const initialLotes: Lote[] = [
   },
   {
     id: "3",
+    contratoId: "2",
     produtoServicoId: "2",
     valor: 120000.7500,
     previsaoEntrega: "2024-09-01",
@@ -82,6 +96,7 @@ const initialLotes: Lote[] = [
 ];
 
 const emptyForm: Omit<Lote, "id"> = {
+  contratoId: "",
   produtoServicoId: "",
   valor: 0,
   previsaoEntrega: "",
@@ -107,6 +122,11 @@ const Lotes = () => {
     return ps ? `${ps.tipo} - ${ps.subtipo}` : "—";
   };
 
+  const getContratoNumero = (id: string) => {
+    const c = contratosMock.find((ct) => ct.id === id);
+    return c ? c.numero : "—";
+  };
+
   const filtered = lotes.filter((lote) => {
     const ps = getProdutoServico(lote.produtoServicoId);
     const psText = ps ? `${ps.tipo} ${ps.subtipo} ${ps.descricao}` : "";
@@ -123,6 +143,7 @@ const Lotes = () => {
   const openEdit = (lote: Lote) => {
     setEditingId(lote.id);
     setForm({
+      contratoId: lote.contratoId,
       produtoServicoId: lote.produtoServicoId,
       valor: lote.valor,
       previsaoEntrega: lote.previsaoEntrega,
@@ -133,10 +154,10 @@ const Lotes = () => {
   };
 
   const handleSave = () => {
-    if (!form.produtoServicoId || !form.previsaoEntrega) {
+    if (!form.contratoId || !form.produtoServicoId || !form.previsaoEntrega) {
       toast({
         title: "Campos obrigatórios",
-        description: "Selecione o Produto/Serviço e a Previsão de Entrega.",
+        description: "Selecione o Contrato, o Produto/Serviço e a Previsão de Entrega.",
         variant: "destructive",
       });
       return;
@@ -211,6 +232,7 @@ const Lotes = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Contrato</TableHead>
                 <TableHead>Descrição do Lote (Produto/Serviço)</TableHead>
                 <TableHead>Valor</TableHead>
                 <TableHead>Prev. Entrega</TableHead>
@@ -222,14 +244,15 @@ const Lotes = () => {
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                     Nenhum lote encontrado.
                   </TableCell>
                 </TableRow>
               ) : (
                 filtered.map((lote) => (
                   <TableRow key={lote.id}>
-                    <TableCell className="font-medium">{getProdutoServicoLabel(lote.produtoServicoId)}</TableCell>
+                    <TableCell className="font-medium">{getContratoNumero(lote.contratoId)}</TableCell>
+                    <TableCell>{getProdutoServicoLabel(lote.produtoServicoId)}</TableCell>
                     <TableCell>{formatCurrency(lote.valor)}</TableCell>
                     <TableCell>{formatDate(lote.previsaoEntrega)}</TableCell>
                     <TableCell>
@@ -276,6 +299,24 @@ const Lotes = () => {
             </DialogHeader>
 
             <div className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <Label>Contrato *</Label>
+                <Select
+                  value={form.contratoId}
+                  onValueChange={(value) => setForm({ ...form, contratoId: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o contrato" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {contratosMock.map((ct) => (
+                      <SelectItem key={ct.id} value={ct.id}>
+                        {ct.numero}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="space-y-2">
                 <Label>Descrição do Lote (Produto/Serviço) *</Label>
                 <Select
