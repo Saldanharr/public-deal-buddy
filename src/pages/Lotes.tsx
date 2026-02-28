@@ -48,6 +48,7 @@ interface Lote {
   id: string;
   contratoId: string;
   produtoServicoId: string;
+  quantidade: number;
   valor: number;
   previsaoEntrega: string;
   entregue: boolean;
@@ -70,6 +71,7 @@ const initialLotes: Lote[] = [
     id: "1",
     contratoId: "1",
     produtoServicoId: "1",
+    quantidade: 100.0000,
     valor: 25000.5000,
     previsaoEntrega: "2024-06-30",
     entregue: true,
@@ -79,6 +81,7 @@ const initialLotes: Lote[] = [
     id: "2",
     contratoId: "1",
     produtoServicoId: "3",
+    quantidade: 50.0000,
     valor: 87500.0000,
     previsaoEntrega: "2024-08-15",
     entregue: false,
@@ -88,6 +91,7 @@ const initialLotes: Lote[] = [
     id: "3",
     contratoId: "2",
     produtoServicoId: "2",
+    quantidade: 1.0000,
     valor: 120000.7500,
     previsaoEntrega: "2024-09-01",
     entregue: false,
@@ -98,6 +102,7 @@ const initialLotes: Lote[] = [
 const emptyForm: Omit<Lote, "id"> = {
   contratoId: "",
   produtoServicoId: "",
+  quantidade: 0,
   valor: 0,
   previsaoEntrega: "",
   entregue: false,
@@ -117,9 +122,14 @@ const Lotes = () => {
   const getProdutoServico = (id: string) =>
     produtosServicos.find((ps) => ps.id === id);
 
-  const getProdutoServicoLabel = (id: string) => {
+  const getProdutoServicoTipoSubtipo = (id: string) => {
     const ps = getProdutoServico(id);
     return ps ? `${ps.tipo} - ${ps.subtipo}` : "—";
+  };
+
+  const getProdutoServicoDescricao = (id: string) => {
+    const ps = getProdutoServico(id);
+    return ps ? ps.descricao : "—";
   };
 
   const getContratoNumero = (id: string) => {
@@ -145,6 +155,7 @@ const Lotes = () => {
     setForm({
       contratoId: lote.contratoId,
       produtoServicoId: lote.produtoServicoId,
+      quantidade: lote.quantidade,
       valor: lote.valor,
       previsaoEntrega: lote.previsaoEntrega,
       entregue: lote.entregue,
@@ -233,7 +244,9 @@ const Lotes = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Contrato</TableHead>
-                <TableHead>Descrição do Lote (Produto/Serviço)</TableHead>
+                <TableHead>Tipo/Subtipo</TableHead>
+                <TableHead>Descrição</TableHead>
+                <TableHead>Quantidade</TableHead>
                 <TableHead>Valor</TableHead>
                 <TableHead>Prev. Entrega</TableHead>
                 <TableHead>Entregue</TableHead>
@@ -244,7 +257,7 @@ const Lotes = () => {
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                     Nenhum lote encontrado.
                   </TableCell>
                 </TableRow>
@@ -252,7 +265,9 @@ const Lotes = () => {
                 filtered.map((lote) => (
                   <TableRow key={lote.id}>
                     <TableCell className="font-medium">{getContratoNumero(lote.contratoId)}</TableCell>
-                    <TableCell>{getProdutoServicoLabel(lote.produtoServicoId)}</TableCell>
+                    <TableCell>{getProdutoServicoTipoSubtipo(lote.produtoServicoId)}</TableCell>
+                    <TableCell>{getProdutoServicoDescricao(lote.produtoServicoId)}</TableCell>
+                    <TableCell>{lote.quantidade.toFixed(4)}</TableCell>
                     <TableCell>{formatCurrency(lote.valor)}</TableCell>
                     <TableCell>{formatDate(lote.previsaoEntrega)}</TableCell>
                     <TableCell>
@@ -336,7 +351,21 @@ const Lotes = () => {
                 </Select>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="quantidade">Quantidade *</Label>
+                  <Input
+                    id="quantidade"
+                    type="number"
+                    step="0.0001"
+                    min="0"
+                    placeholder="0.0000"
+                    value={form.quantidade || ""}
+                    onChange={(e) =>
+                      setForm({ ...form, quantidade: parseFloat(parseFloat(e.target.value).toFixed(4)) || 0 })
+                    }
+                  />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="valor">Valor do Lote (R$) *</Label>
                   <Input
