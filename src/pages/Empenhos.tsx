@@ -22,6 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Plus, Pencil, Trash2, Search, Receipt } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -195,63 +196,93 @@ const Empenhos = () => {
         <div className="rounded-lg border bg-card">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Nº Empenho</TableHead>
+              <TableRow className="bg-primary text-primary-foreground [&>th]:text-primary-foreground">
+                <TableHead>Emenda</TableHead>
+                <TableHead>Assunto</TableHead>
                 <TableHead>Valor</TableHead>
                 <TableHead>Elem. Despesa</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Execução</TableHead>
+                <TableHead>Nº Empenho</TableHead>
                 <TableHead>Data</TableHead>
-                <TableHead className="hidden lg:table-cell">Assunto</TableHead>
-                <TableHead>Emenda</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                     Nenhum empenho encontrado.
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.map((empenho) => (
-                  <TableRow key={empenho.id}>
-                    <TableCell className="font-medium">{empenho.numero}</TableCell>
-                    <TableCell>{formatCurrency(empenho.valor)}</TableCell>
-                    <TableCell>{empenho.elementoDespesa}</TableCell>
-                    <TableCell>{formatDate(empenho.dataEmpenho)}</TableCell>
-                    <TableCell className="hidden lg:table-cell max-w-[250px] truncate">
-                      {empenho.assunto}
-                    </TableCell>
-                    <TableCell>
-                      {empenho.emendaParlamentar ? (
-                        <span className="inline-flex items-center rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">
-                          Sim
+                filtered.map((empenho) => {
+                  // Mock execution percentage (replace with real data later)
+                  const execucao = Math.floor(Math.random() * 101);
+                  const temSaldo = execucao < 100;
+                  return (
+                    <TableRow key={empenho.id}>
+                      <TableCell>
+                        {empenho.emendaParlamentar ? (
+                          <span className="inline-flex items-center rounded-full bg-destructive/10 text-destructive px-2.5 py-0.5 text-xs font-semibold">
+                            Sim
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                            Não
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="max-w-[280px]">
+                          <p className="font-semibold text-foreground truncate">{empenho.numero}</p>
+                          <p className="text-sm text-muted-foreground truncate">{empenho.assunto}</p>
+                          {empenho.emendaParlamentar && empenho.autorEmenda && (
+                            <p className="text-xs text-muted-foreground/70 truncate">Autor: {empenho.autorEmenda}</p>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-medium">{formatCurrency(empenho.valor)}</TableCell>
+                      <TableCell>{empenho.elementoDespesa}</TableCell>
+                      <TableCell>
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                          temSaldo
+                            ? "bg-accent text-accent-foreground"
+                            : "bg-primary/10 text-primary"
+                        }`}>
+                          {temSaldo ? "Com Saldo" : "Sem Saldo"}
                         </span>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">Não</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(empenho)} title="Editar">
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            setDeletingId(empenho.id);
-                            setDeleteDialogOpen(true);
-                          }}
-                          title="Excluir"
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2 min-w-[100px]">
+                          <Progress value={execucao} className="h-2 w-16" />
+                          <span className="text-xs font-medium text-muted-foreground">{execucao}%</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-medium">{empenho.numero}</TableCell>
+                      <TableCell>{formatDate(empenho.dataEmpenho)}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => openEdit(empenho)} title="Editar">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              setDeletingId(empenho.id);
+                              setDeleteDialogOpen(true);
+                            }}
+                            title="Excluir"
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
