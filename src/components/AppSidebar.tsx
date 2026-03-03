@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Building2,
+  Landmark,
 } from "lucide-react";
 
 const menuItems = [
@@ -19,6 +20,7 @@ const menuItems = [
   { label: "Processos", icon: FileText, path: "/processos" },
   { label: "Contratos", icon: ScrollText, path: "/contratos" },
   { label: "Empenhos", icon: Receipt, path: "/empenhos" },
+  { label: "Emendas", icon: Landmark, path: "/emendas" },
   { label: "Liquidações", icon: DollarSign, path: "/liquidacoes" },
   { label: "Saldo de Empenho", icon: Wallet, path: "/saldo-empenho" },
   { label: "Produtos/Serviços", icon: Package, path: "/produtos-servicos" },
