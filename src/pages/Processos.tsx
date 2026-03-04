@@ -21,8 +21,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import ProcessoDetailView from "@/components/ProcessoDetailView";
 
 interface Processo {
   id: string;
@@ -68,6 +69,7 @@ const Processos = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [form, setForm] = useState<Omit<Processo, "id">>(emptyProcesso);
+  const [viewingProcesso, setViewingProcesso] = useState<Processo | null>(null);
   const { toast } = useToast();
 
   const filtered = processos.filter(
@@ -188,6 +190,9 @@ const Processos = () => {
                       <TableCell>{p.interessado}</TableCell>
                       <TableCell>
                         <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => setViewingProcesso(p)} title="Visualizar">
+                            <Eye className="h-4 w-4" />
+                          </Button>
                           <Button variant="ghost" size="icon" onClick={() => openEdit(p)}>
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -261,6 +266,13 @@ const Processos = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Detail View */}
+        <ProcessoDetailView
+          processo={viewingProcesso}
+          open={!!viewingProcesso}
+          onOpenChange={(open) => !open && setViewingProcesso(null)}
+        />
 
         {/* Delete Dialog */}
         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
