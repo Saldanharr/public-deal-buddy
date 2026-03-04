@@ -21,7 +21,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Pencil, Trash2, Search, Landmark } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Landmark, Eye } from "lucide-react";
+import EmendaDetailView from "@/components/EmendaDetailView";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -101,6 +102,7 @@ const EmendasParlamentares = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [form, setForm] = useState<Omit<Emenda, "id">>(emptyForm);
+  const [viewingEmenda, setViewingEmenda] = useState<Emenda | null>(null);
   const { toast } = useToast();
 
   const filtered = emendas.filter(
@@ -283,6 +285,9 @@ const EmendasParlamentares = () => {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => setViewingEmenda(emenda)} title="Visualizar">
+                          <Eye className="h-4 w-4" />
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={() => openEdit(emenda)} title="Editar">
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -456,6 +461,13 @@ const EmendasParlamentares = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Detail View Dialog */}
+        <EmendaDetailView
+          emenda={viewingEmenda}
+          open={!!viewingEmenda}
+          onOpenChange={(open) => !open && setViewingEmenda(null)}
+        />
 
         {/* Delete Confirmation Dialog */}
         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
