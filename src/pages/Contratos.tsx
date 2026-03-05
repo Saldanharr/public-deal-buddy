@@ -28,8 +28,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Pencil, Trash2, ScrollText } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, ScrollText, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import ContratoDetailView from "@/components/ContratoDetailView";
 
 interface Processo {
   id: string;
@@ -104,6 +105,7 @@ const Contratos = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [form, setForm] = useState<Omit<Contrato, "id">>(emptyForm);
+  const [viewingContrato, setViewingContrato] = useState<Contrato | null>(null);
   const { toast } = useToast();
 
   const getProcessoLabel = (id: string) => {
@@ -232,6 +234,9 @@ const Contratos = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => setViewingContrato(c)}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
                           <Button variant="ghost" size="icon" onClick={() => openEdit(c)}>
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -366,6 +371,12 @@ const Contratos = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <ContratoDetailView
+          contrato={viewingContrato}
+          open={!!viewingContrato}
+          onOpenChange={(open) => !open && setViewingContrato(null)}
+        />
       </main>
     </div>
   );
