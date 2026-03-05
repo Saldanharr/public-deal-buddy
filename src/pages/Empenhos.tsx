@@ -21,11 +21,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Pencil, Trash2, Search, Receipt } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Receipt, Eye } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import EmpenhoDetailView from "@/components/EmpenhoDetailView";
 
 interface Empenho {
   id: string;
@@ -89,6 +90,7 @@ const Empenhos = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [form, setForm] = useState<Omit<Empenho, "id">>(emptyForm);
+  const [viewingEmpenho, setViewingEmpenho] = useState<Empenho | null>(null);
   const { toast } = useToast();
 
   const filtered = empenhos.filter(
@@ -263,6 +265,9 @@ const Empenhos = () => {
                       <TableCell>{formatDate(empenho.dataEmpenho)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => setViewingEmpenho(empenho)} title="Visualizar">
+                            <Eye className="h-4 w-4" />
+                          </Button>
                           <Button variant="ghost" size="icon" onClick={() => openEdit(empenho)} title="Editar">
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -421,6 +426,12 @@ const Empenhos = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <EmpenhoDetailView
+          empenho={viewingEmpenho}
+          open={!!viewingEmpenho}
+          onOpenChange={(open) => !open && setViewingEmpenho(null)}
+        />
       </div>
     </DashboardLayout>
   );
