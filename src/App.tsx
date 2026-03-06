@@ -11,6 +11,7 @@ import ProdutosServicos from "./pages/ProdutosServicos";
 import Lotes from "./pages/Lotes";
 import Contratos from "./pages/Contratos";
 import Liquidacoes from "./pages/Liquidacoes";
+import SaldoEmpenho from "./pages/SaldoEmpenho";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
