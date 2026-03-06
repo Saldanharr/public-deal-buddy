@@ -27,7 +27,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Search, Layers } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Layers, Eye } from "lucide-react";
+import LoteDetailView from "@/components/LoteDetailView";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -117,6 +118,7 @@ const Lotes = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [form, setForm] = useState<Omit<Lote, "id">>(emptyForm);
+  const [viewingLote, setViewingLote] = useState<Lote | null>(null);
   const { toast } = useToast();
 
   const getProdutoServico = (id: string) =>
@@ -282,6 +284,9 @@ const Lotes = () => {
                     <TableCell>{lote.entregue ? formatDate(lote.dataEntrega) : "—"}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => setViewingLote(lote)} title="Visualizar">
+                          <Eye className="h-4 w-4" />
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={() => openEdit(lote)} title="Editar">
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -443,6 +448,12 @@ const Lotes = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <LoteDetailView
+          lote={viewingLote}
+          open={!!viewingLote}
+          onOpenChange={(open) => { if (!open) setViewingLote(null); }}
+        />
       </div>
     </DashboardLayout>
   );
