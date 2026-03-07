@@ -20,8 +20,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Pencil, Trash2, Search, PackageSearch } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, PackageSearch, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import ProdutoServicoDetailView, { getCategoryIcon } from "@/components/ProdutoServicoDetailView";
 
 interface ProdutoServico {
   id: string;
