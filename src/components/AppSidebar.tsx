@@ -16,15 +16,15 @@ import {
 } from "lucide-react";
 
 const menuItems = [
-  { label: "Dashboard", icon: LayoutDashboard, path: "/" },
-  { label: "Processos", icon: FileText, path: "/processos" },
-  { label: "Contratos", icon: ScrollText, path: "/contratos" },
-  { label: "Empenhos", icon: Receipt, path: "/empenhos" },
-  { label: "Emendas", icon: Landmark, path: "/emendas" },
-  { label: "Liquidações", icon: DollarSign, path: "/liquidacoes" },
-  { label: "Saldo de Empenho", icon: Wallet, path: "/saldo-empenho" },
-  { label: "Produtos/Serviços", icon: Package, path: "/produtos-servicos" },
-  { label: "Lotes", icon: Layers, path: "/lotes" },
+  { label: "Dashboard", icon: LayoutDashboard, path: "/gestao-contratos" },
+  { label: "Processos", icon: FileText, path: "/gestao-contratos/processos" },
+  { label: "Contratos", icon: ScrollText, path: "/gestao-contratos/contratos" },
+  { label: "Empenhos", icon: Receipt, path: "/gestao-contratos/empenhos" },
+  { label: "Emendas", icon: Landmark, path: "/gestao-contratos/emendas" },
+  { label: "Liquidações", icon: DollarSign, path: "/gestao-contratos/liquidacoes" },
+  { label: "Saldo de Empenho", icon: Wallet, path: "/gestao-contratos/saldo-empenho" },
+  { label: "Produtos/Serviços", icon: Package, path: "/gestao-contratos/produtos-servicos" },
+  { label: "Lotes", icon: Layers, path: "/gestao-contratos/lotes" },
 ];
 
 export const AppSidebar = () => {
