@@ -20,8 +20,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Pencil, Trash2, Search, PackageSearch } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, PackageSearch, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import ProdutoServicoDetailView, { getCategoryIcon } from "@/components/ProdutoServicoDetailView";
 
 interface ProdutoServico {
   id: string;
@@ -31,26 +32,15 @@ interface ProdutoServico {
 }
 
 const initialData: ProdutoServico[] = [
-  {
-    id: "1",
-    tipo: "Material de Consumo",
-    subtipo: "Material de Limpeza",
-    descricao: "Produtos de limpeza para manutenção predial, incluindo detergentes, desinfetantes e afins.",
-  },
-  {
-    id: "2",
-    tipo: "Serviço",
-    subtipo: "Manutenção Predial",
-    descricao: "Serviço de manutenção corretiva e preventiva das instalações físicas do órgão.",
-  },
-  {
-    id: "3",
-    tipo: "Equipamento",
-    subtipo: "Informática",
-    descricao: "Computadores, monitores e periféricos para uso administrativo.",
-  },
+  { id: "1", tipo: "Material de Consumo", subtipo: "Material de Limpeza", descricao: "Produtos de limpeza para manutenção predial, incluindo detergentes, desinfetantes e afins." },
+  { id: "2", tipo: "Serviço", subtipo: "Manutenção Predial", descricao: "Serviço de manutenção corretiva e preventiva das instalações físicas do órgão." },
+  { id: "3", tipo: "Equipamento", subtipo: "Informática", descricao: "Computadores, monitores e periféricos para uso administrativo." },
+  { id: "4", tipo: "Serviço", subtipo: "TI - Sistemas", descricao: "Desenvolvimento e manutenção de sistemas de informação." },
+  { id: "5", tipo: "Equipamento", subtipo: "Veículos", descricao: "Aquisição e locação de veículos para uso institucional." },
+  { id: "6", tipo: "Material de Consumo", subtipo: "Combustível", descricao: "Abastecimento de combustível para frota institucional." },
+  { id: "7", tipo: "Serviço", subtipo: "Segurança e Vigilância", descricao: "Prestação de serviços de vigilância patrimonial." },
+  { id: "8", tipo: "Material de Consumo", subtipo: "Alimentação", descricao: "Gêneros alimentícios para copa e refeitório." },
 ];
-
 const emptyForm: Omit<ProdutoServico, "id"> = {
   tipo: "",
   subtipo: "",
@@ -64,6 +54,7 @@ const ProdutosServicos = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [viewingItem, setViewingItem] = useState<ProdutoServico | null>(null);
   const [form, setForm] = useState<Omit<ProdutoServico, "id">>(emptyForm);
   const { toast } = useToast();
 
@@ -171,31 +162,42 @@ const ProdutosServicos = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-medium">{item.tipo}</TableCell>
-                    <TableCell>{item.subtipo}</TableCell>
-                    <TableCell className="hidden md:table-cell max-w-[300px] truncate">
-                      {item.descricao}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(item)} title="Editar">
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => { setDeletingId(item.id); setDeleteDialogOpen(true); }}
-                          title="Excluir"
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
+                filtered.map((item) => {
+                  const { Icon, color } = getCategoryIcon(item.tipo, item.subtipo);
+                  return (
+                    <TableRow key={item.id}>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          <Icon className={`h-4 w-4 shrink-0 ${color}`} />
+                          {item.tipo}
+                        </div>
+                      </TableCell>
+                      <TableCell>{item.subtipo}</TableCell>
+                      <TableCell className="hidden md:table-cell max-w-[300px] truncate">
+                        {item.descricao}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => setViewingItem(item)} title="Visualizar">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => openEdit(item)} title="Editar">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => { setDeletingId(item.id); setDeleteDialogOpen(true); }}
+                            title="Excluir"
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
@@ -262,6 +264,12 @@ const ProdutosServicos = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <ProdutoServicoDetailView
+          item={viewingItem}
+          open={!!viewingItem}
+          onOpenChange={(open) => { if (!open) setViewingItem(null); }}
+        />
       </div>
     </DashboardLayout>
   );
