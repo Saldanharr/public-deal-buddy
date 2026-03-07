@@ -32,26 +32,15 @@ interface ProdutoServico {
 }
 
 const initialData: ProdutoServico[] = [
-  {
-    id: "1",
-    tipo: "Material de Consumo",
-    subtipo: "Material de Limpeza",
-    descricao: "Produtos de limpeza para manutenção predial, incluindo detergentes, desinfetantes e afins.",
-  },
-  {
-    id: "2",
-    tipo: "Serviço",
-    subtipo: "Manutenção Predial",
-    descricao: "Serviço de manutenção corretiva e preventiva das instalações físicas do órgão.",
-  },
-  {
-    id: "3",
-    tipo: "Equipamento",
-    subtipo: "Informática",
-    descricao: "Computadores, monitores e periféricos para uso administrativo.",
-  },
+  { id: "1", tipo: "Material de Consumo", subtipo: "Material de Limpeza", descricao: "Produtos de limpeza para manutenção predial, incluindo detergentes, desinfetantes e afins." },
+  { id: "2", tipo: "Serviço", subtipo: "Manutenção Predial", descricao: "Serviço de manutenção corretiva e preventiva das instalações físicas do órgão." },
+  { id: "3", tipo: "Equipamento", subtipo: "Informática", descricao: "Computadores, monitores e periféricos para uso administrativo." },
+  { id: "4", tipo: "Serviço", subtipo: "TI - Sistemas", descricao: "Desenvolvimento e manutenção de sistemas de informação." },
+  { id: "5", tipo: "Equipamento", subtipo: "Veículos", descricao: "Aquisição e locação de veículos para uso institucional." },
+  { id: "6", tipo: "Material de Consumo", subtipo: "Combustível", descricao: "Abastecimento de combustível para frota institucional." },
+  { id: "7", tipo: "Serviço", subtipo: "Segurança e Vigilância", descricao: "Prestação de serviços de vigilância patrimonial." },
+  { id: "8", tipo: "Material de Consumo", subtipo: "Alimentação", descricao: "Gêneros alimentícios para copa e refeitório." },
 ];
-
 const emptyForm: Omit<ProdutoServico, "id"> = {
   tipo: "",
   subtipo: "",
@@ -65,6 +54,7 @@ const ProdutosServicos = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [viewingItem, setViewingItem] = useState<ProdutoServico | null>(null);
   const [form, setForm] = useState<Omit<ProdutoServico, "id">>(emptyForm);
   const { toast } = useToast();
 
