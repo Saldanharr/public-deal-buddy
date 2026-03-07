@@ -264,6 +264,12 @@ const ProdutosServicos = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <ProdutoServicoDetailView
+          item={viewingItem}
+          open={!!viewingItem}
+          onOpenChange={(open) => { if (!open) setViewingItem(null); }}
+        />
       </div>
     </DashboardLayout>
   );
