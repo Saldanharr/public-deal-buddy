@@ -77,8 +77,21 @@ export const AppSidebar = () => {
         })}
       </nav>
 
-      {/* Collapse Toggle */}
-      <div className="border-t border-sidebar-border p-3">
+      {/* Footer */}
+      <div className="border-t border-sidebar-border p-3 space-y-1">
+        <Link
+          to="/modulos"
+          className="flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
+        >
+          {collapsed ? (
+            <Layers className="h-4 w-4" />
+          ) : (
+            <>
+              <Layers className="h-4 w-4" />
+              <span>Módulos</span>
+            </>
+          )}
+        </Link>
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
