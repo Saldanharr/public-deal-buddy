@@ -69,8 +69,8 @@ const ModuleSelection = () => {
               <Building className="h-5 w-5 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-foreground">Sistema de Gestão</h1>
-              <p className="text-xs text-muted-foreground">Administração Pública</p>
+              <h1 className="text-sm font-bold text-foreground">PACTUS</h1>
+              <p className="text-xs text-muted-foreground">Acompanhamento de Contratos</p>
             </div>
           </div>
           <Button
