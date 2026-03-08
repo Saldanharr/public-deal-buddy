@@ -8,6 +8,7 @@ import {
   Banknote,
   LogOut,
 } from "lucide-react";
+import logoImg from "@/assets/logo-pactus.png";
 import { Button } from "@/components/ui/button";
 
 const modules = [
@@ -63,15 +64,7 @@ const ModuleSelection = () => {
       {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
-              <Building className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-sm font-bold text-foreground">Sistema de Gestão</h1>
-              <p className="text-xs text-muted-foreground">Administração Pública</p>
-            </div>
-          </div>
+          <img src={logoImg} alt="PACTUS" className="h-10 object-contain" />
           <Button
             variant="ghost"
             size="sm"

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Building2, Lock, User, LogIn } from "lucide-react";
+import { Lock, User, LogIn } from "lucide-react";
+import logoImg from "@/assets/logo-pactus.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -25,13 +26,7 @@ const Login = () => {
       <div className="relative z-10 w-full max-w-md px-6">
         {/* Logo */}
         <div className="mb-8 flex flex-col items-center gap-3">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-lg">
-            <Building2 className="h-8 w-8 text-primary-foreground" />
-          </div>
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-foreground">Sistema de Gestão</h1>
-            <p className="text-sm text-muted-foreground">Administração Pública Municipal</p>
-          </div>
+          <img src={logoImg} alt="PACTUS - Plataforma de Acompanhamento de Contratos" className="h-20 object-contain" />
         </div>
 
         {/* Form */}
