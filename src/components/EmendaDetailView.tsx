@@ -216,7 +216,7 @@ const mockContratos: ContratoData[] = [
     objeto: "Fornecimento de materiais e equipamentos de informática",
     processoId: "1",
     valorTotal: 250000,
-    vigenciaFim: "2025-03-15",
+    vigenciaFim: "2026-03-20",
     rescindido: false,
   },
   {
