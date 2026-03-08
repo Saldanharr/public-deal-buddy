@@ -11,9 +11,9 @@ import {
   Layers,
   ChevronLeft,
   ChevronRight,
+  Building2,
   Landmark,
 } from "lucide-react";
-import logoImg from "@/assets/logo-pactus.png";
 
 const menuItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/gestao-contratos" },
@@ -38,8 +38,18 @@ export const AppSidebar = () => {
       }`}
     >
       {/* Logo */}
-      <div className="flex items-center justify-center px-3 py-4 border-b border-sidebar-border">
-        <img src={logoImg} alt="PACTUS" className={`object-contain transition-all duration-300 ${collapsed ? "h-8" : "h-12"}`} />
+      <div className="flex items-center gap-3 px-5 py-6 border-b border-sidebar-border">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-primary">
+          <Building2 className="h-5 w-5 text-sidebar-primary-foreground" />
+        </div>
+        {!collapsed && (
+          <div className="overflow-hidden">
+            <h1 className="text-sm font-bold text-sidebar-accent-foreground tracking-wide">
+              GESTÃO DE
+            </h1>
+            <p className="text-xs text-sidebar-foreground -mt-0.5">Contratos Públicos</p>
+          </div>
+        )}
       </div>
 
       {/* Navigation */}
