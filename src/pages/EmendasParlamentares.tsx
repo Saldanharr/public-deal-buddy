@@ -50,6 +50,9 @@ const mockEmpenhos: EmpenhoRef[] = [
   { id: "1", numero: "2024NE000123" },
   { id: "2", numero: "2024NE000456" },
   { id: "3", numero: "2024NE000789" },
+  { id: "4", numero: "2024NE001010" },
+  { id: "5", numero: "2024NE001122" },
+  { id: "6", numero: "2024NE001350" },
 ];
 
 const initialEmendas: Emenda[] = [
@@ -74,10 +77,10 @@ const initialEmendas: Emenda[] = [
     numeroEmenda: "202400000002",
     cargoAutor: "Senador",
     autor: "Maria Souza",
-    objeto: "Construção de escola municipal no distrito rural",
+    objeto: "Construção de escola municipal e infraestrutura esportiva no distrito rural",
     unidadeGestora: "Ministério da Educação",
     valor: 1200000.0,
-    empenhoIds: ["2", "3"],
+    empenhoIds: ["2", "3", "4", "5", "6"],
   },
 ];
 
