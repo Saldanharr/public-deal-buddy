@@ -472,6 +472,58 @@ const Contratos = () => {
           open={!!viewingContrato}
           onOpenChange={(open) => !open && setViewingContrato(null)}
         />
+
+        {/* Modal de contratos vencendo */}
+        <Dialog open={alertModalOpen} onOpenChange={setAlertModalOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                <AlertTriangle className="h-5 w-5" />
+                Contratos vencendo em breve
+              </DialogTitle>
+              <DialogDescription>
+                {contratosVencendo.length} {contratosVencendo.length === 1 ? "contrato vence" : "contratos vencem"} nos próximos 30 dias.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 py-2">
+              {contratosVencendo.map((c) => {
+                const dias = getDiasRestantes(c.vigenciaFim);
+                return (
+                  <div
+                    key={c.id}
+                    className="flex items-start gap-3 rounded-lg border border-amber-500/20 bg-amber-500/5 p-4 transition-colors hover:bg-amber-500/10"
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-500/15">
+                      <AlertTriangle className="h-5 w-5 text-amber-600" />
+                    </div>
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-semibold text-sm text-foreground">{c.numero}</span>
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${
+                          dias <= 7
+                            ? "bg-destructive/15 text-destructive"
+                            : dias <= 15
+                            ? "bg-amber-600/15 text-amber-700 dark:text-amber-400"
+                            : "bg-amber-500/10 text-amber-600"
+                        }`}>
+                          {dias} {dias === 1 ? "dia" : "dias"}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{c.contratado}</p>
+                      <p className="text-xs text-muted-foreground truncate">{c.objeto}</p>
+                      <div className="flex items-center justify-between pt-1 text-xs">
+                        <span className="text-muted-foreground">
+                          Vigência: {formatDate(c.vigenciaInicio)} — {formatDate(c.vigenciaFim)}
+                        </span>
+                        <span className="font-medium text-foreground">{formatCurrency(c.valorTotal)}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );
