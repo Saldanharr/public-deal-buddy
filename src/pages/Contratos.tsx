@@ -28,7 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Pencil, Trash2, ScrollText, Eye } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, ScrollText, Eye, AlertTriangle, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ContratoDetailView from "@/components/ContratoDetailView";
 
