@@ -238,6 +238,37 @@ const Contratos = () => {
       <AppSidebar />
       <main className="flex-1 overflow-auto">
         <div className="p-6 md:p-8 space-y-6">
+          {/* Alert Banner */}
+          {contratosVencendo.length > 0 && !bannerDismissed && (
+            <div className="relative flex items-center gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 animate-fade-in">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-500/20">
+                <AlertTriangle className="h-5 w-5 text-amber-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">
+                  {contratosVencendo.length} {contratosVencendo.length === 1 ? "contrato vence" : "contratos vencem"} nos próximos 30 dias
+                </p>
+                <p className="text-xs text-amber-600/80 dark:text-amber-400/70">
+                  Verifique os contratos e tome as providências necessárias para renovação ou encerramento.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="shrink-0 border-amber-500/40 text-amber-700 hover:bg-amber-500/15 dark:text-amber-400"
+                onClick={() => setAlertModalOpen(true)}
+              >
+                Ver contratos
+              </Button>
+              <button
+                onClick={() => setBannerDismissed(true)}
+                className="absolute top-2 right-2 p-0.5 rounded-md text-amber-600/60 hover:text-amber-700 hover:bg-amber-500/10 transition-colors"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
