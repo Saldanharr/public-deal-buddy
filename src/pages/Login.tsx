@@ -30,8 +30,8 @@ const Login = () => {
             <Building2 className="h-8 w-8 text-primary-foreground" />
           </div>
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-foreground">Sistema de Gestão</h1>
-            <p className="text-sm text-muted-foreground">Administração Pública Municipal</p>
+            <h1 className="text-2xl font-bold text-foreground">PACTUS</h1>
+            <p className="text-sm text-muted-foreground">Plataforma de Acompanhamento de Contratos</p>
           </div>
         </div>
 

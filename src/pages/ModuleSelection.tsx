@@ -88,7 +88,7 @@ const ModuleSelection = () => {
       {/* Content */}
       <div className="mx-auto max-w-5xl px-6 py-12">
         <div className="mb-10 text-center">
-          <h2 className="text-3xl font-bold text-foreground">Módulos do Sistema</h2>
+          <h2 className="text-3xl font-bold text-foreground">Módulos PACTUS</h2>
           <p className="mt-2 text-muted-foreground">
             Selecione o módulo que deseja acessar
           </p>
