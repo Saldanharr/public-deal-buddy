@@ -154,7 +154,23 @@ const Contratos = () => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [form, setForm] = useState<Omit<Contrato, "id">>(emptyForm);
   const [viewingContrato, setViewingContrato] = useState<Contrato | null>(null);
+  const [alertModalOpen, setAlertModalOpen] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
   const { toast } = useToast();
+
+  const contratosVencendo = contratos.filter((c) => {
+    if (c.rescindido || !c.vigenciaFim) return false;
+    const hoje = new Date();
+    const fim = new Date(c.vigenciaFim + "T00:00:00");
+    const dias = Math.ceil((fim.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+    return dias >= 0 && dias <= 30;
+  });
+
+  const getDiasRestantes = (vigenciaFim: string) => {
+    const hoje = new Date();
+    const fim = new Date(vigenciaFim + "T00:00:00");
+    return Math.ceil((fim.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+  };
 
   const getProcessoLabel = (id: string) => {
     const p = processosMock.find((pr) => pr.id === id);
