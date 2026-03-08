@@ -69,8 +69,8 @@ const ModuleSelection = () => {
               <Building className="h-5 w-5 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-foreground">Sistema de Gestão</h1>
-              <p className="text-xs text-muted-foreground">Administração Pública</p>
+              <h1 className="text-sm font-bold text-foreground">PACTUS</h1>
+              <p className="text-xs text-muted-foreground">Acompanhamento de Contratos</p>
             </div>
           </div>
           <Button
@@ -88,7 +88,7 @@ const ModuleSelection = () => {
       {/* Content */}
       <div className="mx-auto max-w-5xl px-6 py-12">
         <div className="mb-10 text-center">
-          <h2 className="text-3xl font-bold text-foreground">Módulos do Sistema</h2>
+          <h2 className="text-3xl font-bold text-foreground">Módulos PACTUS</h2>
           <p className="mt-2 text-muted-foreground">
             Selecione o módulo que deseja acessar
           </p>

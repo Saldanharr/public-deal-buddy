@@ -45,9 +45,9 @@ export const AppSidebar = () => {
         {!collapsed && (
           <div className="overflow-hidden">
             <h1 className="text-sm font-bold text-sidebar-accent-foreground tracking-wide">
-              GESTÃO DE
+              PACTUS
             </h1>
-            <p className="text-xs text-sidebar-foreground -mt-0.5">Contratos Públicos</p>
+            <p className="text-xs text-sidebar-foreground -mt-0.5">Acompanhamento de Contratos</p>
           </div>
         )}
       </div>
