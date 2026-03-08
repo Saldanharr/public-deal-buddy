@@ -16,6 +16,11 @@ import {
   Package,
   ChevronDown,
   ChevronUp,
+  Calendar,
+  Building2,
+  User,
+  TrendingUp,
+  CircleDot,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -212,306 +217,277 @@ const formatDate = (dateStr: string) => {
   return d.toLocaleDateString("pt-BR");
 };
 
-// Timeline node colors cycling
-const timelineColors = [
-  { bg: "bg-primary", border: "border-primary", text: "text-primary", light: "bg-primary/10" },
-  { bg: "bg-secondary", border: "border-secondary", text: "text-secondary", light: "bg-secondary/10" },
-  { bg: "bg-accent", border: "border-accent", text: "text-accent", light: "bg-accent/10" },
-  { bg: "bg-destructive", border: "border-destructive", text: "text-destructive", light: "bg-destructive/10" },
-];
+// ---- Sub-section Item ----
 
-// ---- Sub-components ----
+const SubItem = ({
+  icon: Icon,
+  iconColor,
+  title,
+  subtitle,
+  value,
+  badge,
+  badgeVariant,
+  extra,
+}: {
+  icon: React.ElementType;
+  iconColor: string;
+  title: string;
+  subtitle?: string;
+  value?: string;
+  badge?: string;
+  badgeVariant?: "default" | "secondary" | "destructive" | "outline";
+  extra?: React.ReactNode;
+}) => (
+  <div className="group relative flex items-start gap-3 rounded-lg border border-border/60 bg-card p-3 transition-all duration-200 hover:shadow-md hover:border-border">
+    <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${iconColor}`}>
+      <Icon className="h-4 w-4" />
+    </div>
+    <div className="flex-1 min-w-0 space-y-0.5">
+      <div className="flex items-center justify-between gap-2">
+        <span className="font-semibold text-sm text-foreground truncate">{title}</span>
+        {badge && (
+          <Badge variant={badgeVariant || "secondary"} className="text-[10px] shrink-0">
+            {badge}
+          </Badge>
+        )}
+      </div>
+      {subtitle && <p className="text-xs text-muted-foreground truncate">{subtitle}</p>}
+      {value && <p className="text-xs font-semibold text-primary">{value}</p>}
+      {extra}
+    </div>
+  </div>
+);
 
-const SectionHeader = ({
+// ---- Section within timeline node ----
+
+const TimelineSection = ({
   icon: Icon,
   label,
+  color,
+  children,
   count,
 }: {
   icon: React.ElementType;
   label: string;
+  color: string;
+  children: React.ReactNode;
   count: number;
-}) => (
-  <div className="flex items-center gap-2 mb-2">
-    <Icon className="h-4 w-4 text-muted-foreground" />
-    <span className="text-sm font-semibold text-foreground">{label}</span>
-    <Badge variant="secondary" className="text-xs">{count}</Badge>
-  </div>
-);
+}) => {
+  const [open, setOpen] = useState(true);
 
-const ContratoCard = ({ contrato }: { contrato: ContratoData }) => (
-  <div className="rounded-md border bg-card p-3 space-y-1">
-    <div className="flex items-center justify-between">
-      <span className="font-semibold text-sm">{contrato.numero}</span>
-      <Badge variant={contrato.rescindido ? "destructive" : "outline"} className="text-xs">
-        {contrato.rescindido ? "Rescindido" : "Ativo"}
-      </Badge>
-    </div>
-    <p className="text-xs text-muted-foreground truncate">{contrato.contratado}</p>
-    <p className="text-xs text-muted-foreground truncate">{contrato.objeto}</p>
-    <div className="flex items-center justify-between pt-1">
-      <span className="text-xs font-medium text-primary">{formatCurrency(contrato.valorTotal)}</span>
-      <span className="text-xs text-muted-foreground">Vigência: {formatDate(contrato.vigenciaFim)}</span>
-    </div>
-  </div>
-);
-
-const EmpenhoCard = ({ empenho }: { empenho: EmpenhoData }) => {
-  const execucao = Math.floor(Math.random() * 101);
   return (
-    <div className="rounded-md border bg-card p-3 space-y-1">
-      <div className="flex items-center justify-between">
-        <span className="font-semibold text-sm">{empenho.numero}</span>
-        <Badge variant={execucao < 100 ? "secondary" : "destructive"} className="text-xs">
-          {execucao < 100 ? "Com Saldo" : "Sem Saldo"}
-        </Badge>
-      </div>
-      <p className="text-xs text-muted-foreground truncate">{empenho.assunto}</p>
-      <div className="flex items-center justify-between pt-1">
-        <span className="text-xs font-medium text-primary">{formatCurrency(empenho.valor)}</span>
-        <div className="flex items-center gap-1.5">
-          <Progress value={execucao} className="h-1.5 w-12" />
-          <span className="text-[10px] text-muted-foreground">{execucao}%</span>
+    <div className="relative ml-5 mt-3">
+      {/* Horizontal branch line */}
+      <div className="absolute -left-5 top-3 w-5 h-px bg-border" />
+      {/* Small dot at branch */}
+      <div className={`absolute -left-[22px] top-[9px] w-[5px] h-[5px] rounded-full ${color}`} />
+
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 mb-2 group/section"
+      >
+        <div className={`flex h-6 w-6 items-center justify-center rounded-md ${color} transition-colors`}>
+          <Icon className="h-3.5 w-3.5 text-primary-foreground" />
         </div>
-      </div>
-      <div className="flex items-center justify-between">
-        <span className="text-[10px] text-muted-foreground">ED: {empenho.elementoDespesa}</span>
-        <span className="text-[10px] text-muted-foreground">{formatDate(empenho.dataEmpenho)}</span>
-      </div>
+        <span className="text-xs font-bold text-foreground uppercase tracking-wider">{label}</span>
+        <Badge variant="outline" className="text-[10px] h-4 px-1.5">{count}</Badge>
+        {open ? <ChevronUp className="h-3 w-3 text-muted-foreground" /> : <ChevronDown className="h-3 w-3 text-muted-foreground" />}
+      </button>
+
+      {open && (
+        <div className="grid gap-2 animate-fade-in">
+          {children}
+        </div>
+      )}
     </div>
   );
 };
 
-const LiquidacaoCard = ({ liquidacao }: { liquidacao: LiquidacaoData }) => (
-  <div className="rounded-md border bg-card p-3 space-y-1">
-    <div className="flex items-center justify-between">
-      <span className="font-semibold text-sm">{liquidacao.numero}</span>
-      <span className="text-xs text-muted-foreground">{formatDate(liquidacao.dataLiquidacao)}</span>
-    </div>
-    <p className="text-xs text-muted-foreground truncate">{liquidacao.descricao}</p>
-    <span className="text-xs font-medium text-primary">{formatCurrency(liquidacao.valorTotal)}</span>
-  </div>
-);
+// ---- Timeline Process Node ----
 
-const LoteCard = ({ lote }: { lote: LoteData }) => (
-  <div className="rounded-md border bg-card p-3 space-y-1">
-    <div className="flex items-center justify-between">
-      <span className="font-semibold text-sm">{lote.numero}</span>
-    </div>
-    <p className="text-xs text-muted-foreground truncate">{lote.descricao}</p>
-    <span className="text-xs font-medium text-primary">{formatCurrency(lote.valor)}</span>
-  </div>
-);
-
-// ---- Timeline Node ----
-
-interface TimelineNodeProps {
-  processo: ProcessoData;
-  empenhos: EmpenhoData[];
-  contratos: ContratoData[];
-  liquidacoes: LiquidacaoData[];
-  lotes: LoteData[];
-  colorIndex: number;
-  isLast: boolean;
-  side: "left" | "right";
-}
-
-const TimelineNode = ({
+const ProcessoTimelineNode = ({
   processo,
   empenhos,
   contratos,
   liquidacoes,
   lotes,
-  colorIndex,
+  index,
   isLast,
-  side,
-}: TimelineNodeProps) => {
+}: {
+  processo: ProcessoData;
+  empenhos: EmpenhoData[];
+  contratos: ContratoData[];
+  liquidacoes: LiquidacaoData[];
+  lotes: LoteData[];
+  index: number;
+  isLast: boolean;
+}) => {
   const [expanded, setExpanded] = useState(true);
-  const color = timelineColors[colorIndex % timelineColors.length];
+  const totalValor = empenhos.reduce((s, e) => s + e.valor, 0);
 
   return (
-    <div className="relative flex items-start gap-0">
-      {/* Left content (if side === left, show card; otherwise empty spacer) */}
-      <div className={`flex-1 ${side === "right" ? "hidden sm:block" : ""}`}>
-        {side === "left" && (
-          <div className="pr-6 pb-4">
-            <TimelineCard
-              processo={processo}
-              empenhos={empenhos}
-              contratos={contratos}
-              liquidacoes={liquidacoes}
-              lotes={lotes}
-              color={color}
-              expanded={expanded}
-              onToggle={() => setExpanded(!expanded)}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Center spine */}
-      <div className="relative flex flex-col items-center z-10">
-        {/* Node circle */}
-        <div
-          className={`w-10 h-10 rounded-full ${color.bg} flex items-center justify-center shadow-md border-4 border-background cursor-pointer`}
+    <div className="relative flex gap-4 animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
+      {/* Left spine */}
+      <div className="flex flex-col items-center">
+        {/* Main node */}
+        <button
           onClick={() => setExpanded(!expanded)}
+          className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg ring-4 ring-background transition-transform duration-200 hover:scale-110"
         >
-          <FileText className="h-4 w-4 text-primary-foreground" />
-        </div>
-        {/* Vertical line below */}
+          <FileText className="h-5 w-5" />
+        </button>
+        {/* Vertical connector */}
         {!isLast && (
-          <div className="w-0.5 bg-border flex-1 min-h-[40px]" />
+          <div className="w-0.5 flex-1 bg-gradient-to-b from-primary/40 to-border min-h-[24px]" />
         )}
       </div>
 
-      {/* Right content */}
-      <div className={`flex-1 ${side === "left" ? "hidden sm:block" : ""}`}>
-        {side === "right" && (
-          <div className="pl-6 pb-4">
-            <TimelineCard
-              processo={processo}
-              empenhos={empenhos}
-              contratos={contratos}
-              liquidacoes={liquidacoes}
-              lotes={lotes}
-              color={color}
-              expanded={expanded}
-              onToggle={() => setExpanded(!expanded)}
-            />
+      {/* Content */}
+      <div className={`flex-1 pb-8 ${isLast ? "" : ""}`}>
+        {/* Process header card */}
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="w-full text-left rounded-xl border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-transparent p-4 transition-all duration-200 hover:border-primary/40 hover:shadow-md"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="space-y-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <h4 className="font-bold text-base text-foreground">{processo.sigla}</h4>
+                <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/20">
+                  NUP {processo.nup}
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground">{processo.assunto}</p>
+              <div className="flex flex-wrap items-center gap-3 pt-1 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  {formatDate(processo.dataCriacao)}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Building2 className="h-3 w-3" />
+                  {processo.departamentoGestor}
+                </span>
+                <span className="flex items-center gap-1">
+                  <User className="h-3 w-3" />
+                  {processo.interessado}
+                </span>
+              </div>
+            </div>
+            <div className="flex flex-col items-end gap-1 shrink-0">
+              <span className="text-sm font-bold text-primary">{formatCurrency(totalValor)}</span>
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <span className="text-[10px]">{empenhos.length} emp · {contratos.length} ct · {liquidacoes.length} liq</span>
+                {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+              </div>
+            </div>
           </div>
-        )}
-        {/* On mobile, always show on right if side is left */}
-        {side === "left" && (
-          <div className="pl-6 pb-4 sm:hidden">
-            <TimelineCard
-              processo={processo}
-              empenhos={empenhos}
-              contratos={contratos}
-              liquidacoes={liquidacoes}
-              lotes={lotes}
-              color={color}
-              expanded={expanded}
-              onToggle={() => setExpanded(!expanded)}
-            />
+        </button>
+
+        {/* Expanded sub-sections */}
+        {expanded && (
+          <div className="relative mt-1 ml-1 border-l-2 border-border/50 pl-1 space-y-1 animate-fade-in">
+            {/* Contratos */}
+            {contratos.length > 0 && (
+              <TimelineSection icon={ScrollText} label="Contratos" color="bg-secondary" count={contratos.length}>
+                {contratos.map((c) => (
+                  <SubItem
+                    key={c.id}
+                    icon={ScrollText}
+                    iconColor="bg-secondary/15 text-secondary"
+                    title={c.numero}
+                    subtitle={`${c.contratado} — ${c.objeto}`}
+                    value={formatCurrency(c.valorTotal)}
+                    badge={c.rescindido ? "Rescindido" : "Ativo"}
+                    badgeVariant={c.rescindido ? "destructive" : "outline"}
+                    extra={
+                      <span className="text-[10px] text-muted-foreground">
+                        Vigência até {formatDate(c.vigenciaFim)}
+                      </span>
+                    }
+                  />
+                ))}
+              </TimelineSection>
+            )}
+
+            {/* Empenhos */}
+            {empenhos.length > 0 && (
+              <TimelineSection icon={Receipt} label="Empenhos" color="bg-accent" count={empenhos.length}>
+                {empenhos.map((e) => {
+                  const exec = 65 + Math.floor(Math.random() * 35);
+                  return (
+                    <SubItem
+                      key={e.id}
+                      icon={Receipt}
+                      iconColor="bg-accent/15 text-accent-foreground"
+                      title={e.numero}
+                      subtitle={e.assunto}
+                      value={formatCurrency(e.valor)}
+                      badge={exec < 100 ? "Com Saldo" : "Sem Saldo"}
+                      badgeVariant={exec < 100 ? "secondary" : "destructive"}
+                      extra={
+                        <div className="flex items-center gap-2 pt-0.5">
+                          <span className="text-[10px] text-muted-foreground">ED: {e.elementoDespesa}</span>
+                          <span className="text-[10px] text-muted-foreground">{formatDate(e.dataEmpenho)}</span>
+                          <div className="flex items-center gap-1 ml-auto">
+                            <Progress value={exec} className="h-1.5 w-14" />
+                            <span className="text-[10px] font-medium text-muted-foreground">{exec}%</span>
+                          </div>
+                        </div>
+                      }
+                    />
+                  );
+                })}
+              </TimelineSection>
+            )}
+
+            {/* Liquidações */}
+            {liquidacoes.length > 0 && (
+              <TimelineSection icon={DollarSign} label="Liquidações" color="bg-primary" count={liquidacoes.length}>
+                {liquidacoes.map((l) => (
+                  <SubItem
+                    key={l.id}
+                    icon={DollarSign}
+                    iconColor="bg-primary/15 text-primary"
+                    title={l.numero}
+                    subtitle={l.descricao}
+                    value={formatCurrency(l.valorTotal)}
+                    extra={
+                      <span className="text-[10px] text-muted-foreground">
+                        {formatDate(l.dataLiquidacao)}
+                      </span>
+                    }
+                  />
+                ))}
+              </TimelineSection>
+            )}
+
+            {/* Lotes */}
+            {lotes.length > 0 && (
+              <TimelineSection icon={Package} label="Lotes" color="bg-destructive" count={lotes.length}>
+                {lotes.map((l) => (
+                  <SubItem
+                    key={l.id}
+                    icon={Package}
+                    iconColor="bg-destructive/15 text-destructive"
+                    title={l.numero}
+                    subtitle={l.descricao}
+                    value={formatCurrency(l.valor)}
+                  />
+                ))}
+              </TimelineSection>
+            )}
+
+            {contratos.length === 0 && empenhos.length === 0 && liquidacoes.length === 0 && lotes.length === 0 && (
+              <p className="text-xs text-muted-foreground text-center py-4 ml-5">
+                Nenhum vínculo encontrado para este processo.
+              </p>
+            )}
           </div>
         )}
       </div>
     </div>
   );
 };
-
-// ---- Timeline Card ----
-
-interface TimelineCardProps {
-  processo: ProcessoData;
-  empenhos: EmpenhoData[];
-  contratos: ContratoData[];
-  liquidacoes: LiquidacaoData[];
-  lotes: LoteData[];
-  color: (typeof timelineColors)[0];
-  expanded: boolean;
-  onToggle: () => void;
-}
-
-const TimelineCard = ({
-  processo,
-  empenhos,
-  contratos,
-  liquidacoes,
-  lotes,
-  color,
-  expanded,
-  onToggle,
-}: TimelineCardProps) => (
-  <div className={`rounded-lg border-2 ${color.border} ${color.light} shadow-sm overflow-hidden animate-fade-in`}>
-    {/* Card header */}
-    <button
-      onClick={onToggle}
-      className={`w-full flex items-center justify-between px-4 py-3 ${color.bg} text-primary-foreground`}
-    >
-      <div className="flex items-center gap-2 text-left">
-        <FileText className="h-4 w-4 shrink-0" />
-        <div>
-          <p className="font-bold text-sm">{processo.sigla}</p>
-          <p className="text-xs opacity-90">NUP: {processo.nup}</p>
-        </div>
-      </div>
-      <div className="flex items-center gap-2">
-        <Badge variant="outline" className="bg-background/20 text-primary-foreground border-primary-foreground/30 text-[10px]">
-          {formatDate(processo.dataCriacao)}
-        </Badge>
-        {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-      </div>
-    </button>
-
-    {/* Card body */}
-    {expanded && (
-      <div className="p-4 space-y-4">
-        {/* Processo info */}
-        <div className="text-sm space-y-1">
-          <p className="text-muted-foreground text-xs">{processo.assunto}</p>
-          <div className="flex gap-3 text-xs">
-            <span><strong>Gestor:</strong> {processo.departamentoGestor}</span>
-            <span><strong>Interessado:</strong> {processo.interessado}</span>
-          </div>
-        </div>
-
-        {/* Contratos */}
-        {contratos.length > 0 && (
-          <div>
-            <SectionHeader icon={ScrollText} label="Contratos" count={contratos.length} />
-            <div className="grid gap-2">
-              {contratos.map((c) => (
-                <ContratoCard key={c.id} contrato={c} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Empenhos */}
-        {empenhos.length > 0 && (
-          <div>
-            <SectionHeader icon={Receipt} label="Empenhos" count={empenhos.length} />
-            <div className="grid gap-2 sm:grid-cols-2">
-              {empenhos.map((e) => (
-                <EmpenhoCard key={e.id} empenho={e} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Liquidações */}
-        {liquidacoes.length > 0 && (
-          <div>
-            <SectionHeader icon={DollarSign} label="Liquidações" count={liquidacoes.length} />
-            <div className="grid gap-2">
-              {liquidacoes.map((l) => (
-                <LiquidacaoCard key={l.id} liquidacao={l} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Lotes */}
-        {lotes.length > 0 && (
-          <div>
-            <SectionHeader icon={Package} label="Lotes" count={lotes.length} />
-            <div className="grid gap-2 sm:grid-cols-2">
-              {lotes.map((l) => (
-                <LoteCard key={l.id} lote={l} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {contratos.length === 0 && empenhos.length === 0 && liquidacoes.length === 0 && lotes.length === 0 && (
-          <p className="text-xs text-muted-foreground text-center py-2">
-            Nenhum vínculo encontrado para este processo.
-          </p>
-        )}
-      </div>
-    )}
-  </div>
-);
 
 // ---- Main Component ----
 
@@ -524,114 +500,118 @@ interface EmendaDetailViewProps {
 const EmendaDetailView = ({ emenda, open, onOpenChange }: EmendaDetailViewProps) => {
   if (!emenda) return null;
 
-  // Related empenhos
-  const relatedEmpenhos = mockEmpenhos.filter((e) =>
-    emenda.empenhoIds.includes(e.id)
-  );
-
-  // Related processos via empenhos
+  const relatedEmpenhos = mockEmpenhos.filter((e) => emenda.empenhoIds.includes(e.id));
   const processoIds = [...new Set(relatedEmpenhos.map((e) => e.processoId).filter(Boolean))];
   const relatedProcessos = mockProcessos.filter((p) => processoIds.includes(p.id));
 
-  // Build per-processo data
   const getProcessoData = (processoId: string) => {
     const procEmpenhos = relatedEmpenhos.filter((e) => e.processoId === processoId);
     const procEmpenhoIds = new Set(procEmpenhos.map((e) => e.id));
-
     const procContratoIds = [...new Set(procEmpenhos.map((e) => e.contratoId).filter(Boolean))];
     const procContratos = mockContratos.filter((c) => procContratoIds.includes(c.id));
-
     const procLiquidacoes = mockLiquidacoes.filter((l) =>
       l.empenhoIds.some((eid) => procEmpenhoIds.has(eid))
     );
-
     const allContratoIds = new Set(procContratos.map((c) => c.id));
     const procLotes = mockLotes.filter((l) => allContratoIds.has(l.contratoId));
-
     return { empenhos: procEmpenhos, contratos: procContratos, liquidacoes: procLiquidacoes, lotes: procLotes };
   };
 
-  // Total values
   const totalEmpenhos = relatedEmpenhos.reduce((s, e) => s + e.valor, 0);
+  const totalLiquidado = mockLiquidacoes
+    .filter((l) => l.empenhoIds.some((eid) => relatedEmpenhos.some((e) => e.id === eid)))
+    .reduce((s, l) => s + l.valorTotal, 0);
+  const percentExec = totalEmpenhos > 0 ? Math.round((totalLiquidado / totalEmpenhos) * 100) : 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[950px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Landmark className="h-5 w-5 text-primary" />
-            Detalhes da Emenda — {emenda.codigo}
-          </DialogTitle>
-          <DialogDescription>
-            Timeline de processos, contratos, empenhos e liquidações vinculados a esta emenda parlamentar.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto p-0">
+        {/* Hero header */}
+        <div className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground p-6 pb-5">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2.5 text-primary-foreground">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-foreground/20">
+                <Landmark className="h-5 w-5" />
+              </div>
+              <div>
+                <span className="text-lg font-bold">Emenda {emenda.codigo}</span>
+                <p className="text-xs font-normal opacity-80 mt-0.5">Nº {emenda.numeroEmenda} · {emenda.anoEmenda} · {emenda.tipo}</p>
+              </div>
+            </DialogTitle>
+            <DialogDescription className="sr-only">
+              Detalhes da emenda parlamentar e vínculos
+            </DialogDescription>
+          </DialogHeader>
 
-        {/* Emenda summary card */}
-        <div className="rounded-lg border bg-muted/30 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-          <div>
-            <p className="text-muted-foreground text-xs">Nº Emenda</p>
-            <p className="font-semibold">{emenda.numeroEmenda}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground text-xs">Tipo</p>
-            <Badge variant="secondary">{emenda.tipo}</Badge>
-          </div>
-          <div>
-            <p className="text-muted-foreground text-xs">Autor</p>
-            <p className="font-medium">{emenda.autor}</p>
-            <p className="text-xs text-muted-foreground">{emenda.cargoAutor}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground text-xs">Valor</p>
-            <p className="font-semibold text-primary">{formatCurrency(emenda.valor)}</p>
-          </div>
-          <div className="col-span-2">
-            <p className="text-muted-foreground text-xs">Objeto</p>
-            <p className="text-sm">{emenda.objeto || "—"}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground text-xs">Processos Vinculados</p>
-            <p className="font-semibold">{relatedProcessos.length}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground text-xs">Total Empenhado</p>
-            <p className="font-semibold text-primary">{formatCurrency(totalEmpenhos)}</p>
-          </div>
-        </div>
-
-        {/* Timeline */}
-        {relatedProcessos.length === 0 ? (
-          <div className="text-center text-muted-foreground py-8 text-sm">
-            Nenhum processo vinculado a esta emenda.
-          </div>
-        ) : (
-          <div className="mt-4">
-            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <FileText className="h-4 w-4 text-primary" />
-              Timeline de Processos
-            </h3>
-            <div className="relative">
-              {relatedProcessos.map((proc, index) => {
-                const data = getProcessoData(proc.id);
-                const side = index % 2 === 0 ? "right" : "left";
-                return (
-                  <TimelineNode
-                    key={proc.id}
-                    processo={proc}
-                    empenhos={data.empenhos}
-                    contratos={data.contratos}
-                    liquidacoes={data.liquidacoes}
-                    lotes={data.lotes}
-                    colorIndex={index}
-                    isLast={index === relatedProcessos.length - 1}
-                    side={side}
-                  />
-                );
-              })}
+          {/* Summary stats */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
+            <div className="rounded-lg bg-primary-foreground/10 backdrop-blur-sm p-3">
+              <p className="text-[10px] uppercase tracking-wider opacity-70 mb-1">Autor</p>
+              <p className="font-semibold text-sm">{emenda.autor}</p>
+              <p className="text-[10px] opacity-70">{emenda.cargoAutor}</p>
+            </div>
+            <div className="rounded-lg bg-primary-foreground/10 backdrop-blur-sm p-3">
+              <p className="text-[10px] uppercase tracking-wider opacity-70 mb-1">Valor da Emenda</p>
+              <p className="font-bold text-sm">{formatCurrency(emenda.valor)}</p>
+            </div>
+            <div className="rounded-lg bg-primary-foreground/10 backdrop-blur-sm p-3">
+              <p className="text-[10px] uppercase tracking-wider opacity-70 mb-1">Total Empenhado</p>
+              <p className="font-bold text-sm">{formatCurrency(totalEmpenhos)}</p>
+            </div>
+            <div className="rounded-lg bg-primary-foreground/10 backdrop-blur-sm p-3">
+              <p className="text-[10px] uppercase tracking-wider opacity-70 mb-1">Execução</p>
+              <div className="flex items-center gap-2">
+                <Progress value={percentExec} className="h-2 flex-1 bg-primary-foreground/20" />
+                <span className="font-bold text-sm">{percentExec}%</span>
+              </div>
+              <p className="text-[10px] opacity-70 mt-0.5">{formatCurrency(totalLiquidado)} liquidado</p>
             </div>
           </div>
-        )}
+
+          {emenda.objeto && (
+            <p className="text-xs opacity-80 mt-3 leading-relaxed">
+              <strong>Objeto:</strong> {emenda.objeto}
+            </p>
+          )}
+        </div>
+
+        {/* Timeline body */}
+        <div className="p-6">
+          {relatedProcessos.length === 0 ? (
+            <div className="text-center text-muted-foreground py-12 text-sm">
+              <CircleDot className="h-8 w-8 mx-auto mb-2 opacity-40" />
+              Nenhum processo vinculado a esta emenda.
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-2 mb-5">
+                <TrendingUp className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">
+                  Fluxo de Execução
+                </h3>
+                <Badge variant="secondary" className="text-[10px]">{relatedProcessos.length} processos</Badge>
+              </div>
+
+              <div className="relative">
+                {relatedProcessos.map((proc, index) => {
+                  const data = getProcessoData(proc.id);
+                  return (
+                    <ProcessoTimelineNode
+                      key={proc.id}
+                      processo={proc}
+                      empenhos={data.empenhos}
+                      contratos={data.contratos}
+                      liquidacoes={data.liquidacoes}
+                      lotes={data.lotes}
+                      index={index}
+                      isLast={index === relatedProcessos.length - 1}
+                    />
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
