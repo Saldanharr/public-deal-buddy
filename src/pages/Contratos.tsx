@@ -28,7 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Pencil, Trash2, ScrollText, Eye } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, ScrollText, Eye, AlertTriangle, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ContratoDetailView from "@/components/ContratoDetailView";
 
@@ -70,11 +70,59 @@ const initialContratos: Contrato[] = [
     objeto: "Manutenção de sistemas de informação",
     processoId: "1",
     nupContrato: "11122233344",
-    valorTotal: 450000.0000,
+    valorTotal: 450000.0,
     dataContrato: "2024-01-20",
     vigenciaInicio: "2024-02-01",
-    vigenciaFim: "2025-01-31",
+    vigenciaFim: "2026-03-25",
     dataPublicacao: "2024-01-25",
+    rescindido: false,
+    dataRescisao: "",
+    motivoRescisao: "",
+  },
+  {
+    id: "2",
+    numero: "CT-2024-000002",
+    contratado: "Serviços Alfa S.A.",
+    objeto: "Prestação de serviços de limpeza",
+    processoId: "2",
+    nupContrato: "22233344455",
+    valorTotal: 320000.0,
+    dataContrato: "2024-03-10",
+    vigenciaInicio: "2024-04-01",
+    vigenciaFim: "2026-03-15",
+    dataPublicacao: "2024-03-15",
+    rescindido: false,
+    dataRescisao: "",
+    motivoRescisao: "",
+  },
+  {
+    id: "3",
+    numero: "CT-2024-000003",
+    contratado: "Construtora Beta Ltda",
+    objeto: "Reforma predial - Bloco B",
+    processoId: "1",
+    nupContrato: "33344455566",
+    valorTotal: 890000.0,
+    dataContrato: "2024-05-01",
+    vigenciaInicio: "2024-06-01",
+    vigenciaFim: "2026-12-31",
+    dataPublicacao: "2024-05-10",
+    rescindido: false,
+    dataRescisao: "",
+    motivoRescisao: "",
+  },
+  {
+    id: "4",
+    numero: "CT-2024-000004",
+    contratado: "Logística Express Ltda",
+    objeto: "Serviço de transporte e logística",
+    processoId: "2",
+    nupContrato: "44455566677",
+    valorTotal: 175000.0,
+    dataContrato: "2024-07-15",
+    vigenciaInicio: "2024-08-01",
+    vigenciaFim: "2026-04-02",
+    dataPublicacao: "2024-07-20",
     rescindido: false,
     dataRescisao: "",
     motivoRescisao: "",
@@ -106,7 +154,23 @@ const Contratos = () => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [form, setForm] = useState<Omit<Contrato, "id">>(emptyForm);
   const [viewingContrato, setViewingContrato] = useState<Contrato | null>(null);
+  const [alertModalOpen, setAlertModalOpen] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
   const { toast } = useToast();
+
+  const contratosVencendo = contratos.filter((c) => {
+    if (c.rescindido || !c.vigenciaFim) return false;
+    const hoje = new Date();
+    const fim = new Date(c.vigenciaFim + "T00:00:00");
+    const dias = Math.ceil((fim.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+    return dias >= 0 && dias <= 30;
+  });
+
+  const getDiasRestantes = (vigenciaFim: string) => {
+    const hoje = new Date();
+    const fim = new Date(vigenciaFim + "T00:00:00");
+    return Math.ceil((fim.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+  };
 
   const getProcessoLabel = (id: string) => {
     const p = processosMock.find((pr) => pr.id === id);
@@ -174,6 +238,37 @@ const Contratos = () => {
       <AppSidebar />
       <main className="flex-1 overflow-auto">
         <div className="p-6 md:p-8 space-y-6">
+          {/* Alert Banner */}
+          {contratosVencendo.length > 0 && !bannerDismissed && (
+            <div className="relative flex items-center gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 animate-fade-in">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-500/20">
+                <AlertTriangle className="h-5 w-5 text-amber-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">
+                  {contratosVencendo.length} {contratosVencendo.length === 1 ? "contrato vence" : "contratos vencem"} nos próximos 30 dias
+                </p>
+                <p className="text-xs text-amber-600/80 dark:text-amber-400/70">
+                  Verifique os contratos e tome as providências necessárias para renovação ou encerramento.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="shrink-0 border-amber-500/40 text-amber-700 hover:bg-amber-500/15 dark:text-amber-400"
+                onClick={() => setAlertModalOpen(true)}
+              >
+                Ver contratos
+              </Button>
+              <button
+                onClick={() => setBannerDismissed(true)}
+                className="absolute top-2 right-2 p-0.5 rounded-md text-amber-600/60 hover:text-amber-700 hover:bg-amber-500/10 transition-colors"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
@@ -377,6 +472,58 @@ const Contratos = () => {
           open={!!viewingContrato}
           onOpenChange={(open) => !open && setViewingContrato(null)}
         />
+
+        {/* Modal de contratos vencendo */}
+        <Dialog open={alertModalOpen} onOpenChange={setAlertModalOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                <AlertTriangle className="h-5 w-5" />
+                Contratos vencendo em breve
+              </DialogTitle>
+              <DialogDescription>
+                {contratosVencendo.length} {contratosVencendo.length === 1 ? "contrato vence" : "contratos vencem"} nos próximos 30 dias.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 py-2">
+              {contratosVencendo.map((c) => {
+                const dias = getDiasRestantes(c.vigenciaFim);
+                return (
+                  <div
+                    key={c.id}
+                    className="flex items-start gap-3 rounded-lg border border-amber-500/20 bg-amber-500/5 p-4 transition-colors hover:bg-amber-500/10"
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-500/15">
+                      <AlertTriangle className="h-5 w-5 text-amber-600" />
+                    </div>
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-semibold text-sm text-foreground">{c.numero}</span>
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${
+                          dias <= 7
+                            ? "bg-destructive/15 text-destructive"
+                            : dias <= 15
+                            ? "bg-amber-600/15 text-amber-700 dark:text-amber-400"
+                            : "bg-amber-500/10 text-amber-600"
+                        }`}>
+                          {dias} {dias === 1 ? "dia" : "dias"}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{c.contratado}</p>
+                      <p className="text-xs text-muted-foreground truncate">{c.objeto}</p>
+                      <div className="flex items-center justify-between pt-1 text-xs">
+                        <span className="text-muted-foreground">
+                          Vigência: {formatDate(c.vigenciaInicio)} — {formatDate(c.vigenciaFim)}
+                        </span>
+                        <span className="font-medium text-foreground">{formatCurrency(c.valorTotal)}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );
