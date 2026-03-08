@@ -21,6 +21,7 @@ import {
   User,
   TrendingUp,
   CircleDot,
+  AlertTriangle,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -215,7 +216,7 @@ const mockContratos: ContratoData[] = [
     objeto: "Fornecimento de materiais e equipamentos de informática",
     processoId: "1",
     valorTotal: 250000,
-    vigenciaFim: "2025-03-15",
+    vigenciaFim: "2026-03-20",
     rescindido: false,
   },
   {
@@ -503,23 +504,32 @@ const ProcessoTimelineNode = ({
             {/* Contratos */}
             {contratos.length > 0 && (
               <TimelineSection icon={ScrollText} label="Contratos" color="bg-secondary" count={contratos.length}>
-                {contratos.map((c) => (
-                  <SubItem
-                    key={c.id}
-                    icon={ScrollText}
-                    iconColor="bg-secondary/15 text-secondary"
-                    title={c.numero}
-                    subtitle={`${c.contratado} — ${c.objeto}`}
-                    value={formatCurrency(c.valorTotal)}
-                    badge={c.rescindido ? "Rescindido" : "Ativo"}
-                    badgeVariant={c.rescindido ? "destructive" : "outline"}
-                    extra={
-                      <span className="text-[10px] text-muted-foreground">
-                        Vigência até {formatDate(c.vigenciaFim)}
-                      </span>
-                    }
-                  />
-                ))}
+                {contratos.map((c) => {
+                  const hoje = new Date();
+                  const fim = new Date(c.vigenciaFim + "T00:00:00");
+                  const diasRestantes = Math.ceil((fim.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+                  const vencendoEm30Dias = !c.rescindido && diasRestantes >= 0 && diasRestantes <= 30;
+
+                  return (
+                    <SubItem
+                      key={c.id}
+                      icon={vencendoEm30Dias ? AlertTriangle : ScrollText}
+                      iconColor={vencendoEm30Dias ? "bg-amber-500/15 text-amber-600" : "bg-secondary/15 text-secondary"}
+                      title={c.numero}
+                      subtitle={`${c.contratado} — ${c.objeto}`}
+                      value={formatCurrency(c.valorTotal)}
+                      badge={c.rescindido ? "Rescindido" : vencendoEm30Dias ? "Vence em breve" : "Ativo"}
+                      badgeVariant={c.rescindido ? "destructive" : vencendoEm30Dias ? "default" : "outline"}
+                      extra={
+                        <span className={`text-[10px] flex items-center gap-1 ${vencendoEm30Dias ? "text-amber-600 font-semibold" : "text-muted-foreground"}`}>
+                          {vencendoEm30Dias && <AlertTriangle className="h-3 w-3" />}
+                          Vigência até {formatDate(c.vigenciaFim)}
+                          {vencendoEm30Dias && ` (${diasRestantes} dias)`}
+                        </span>
+                      }
+                    />
+                  );
+                })}
               </TimelineSection>
             )}
 
