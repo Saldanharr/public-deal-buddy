@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Building2, Lock, User, LogIn } from "lucide-react";
+import logoSAS from "@/assets/logo_SAS_color.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -80,6 +81,16 @@ const Login = () => {
           © 2026 — Administração Pública Municipal
         </p>
       </div>
+
+      {/* Footer */}
+      <footer className="absolute bottom-0 left-0 right-0 border-t border-border bg-card/80 backdrop-blur px-6 py-3">
+        <div className="flex items-center justify-between max-w-6xl mx-auto">
+          <p className="text-xs text-muted-foreground">
+            Mais inteligência na gestão municipal
+          </p>
+          <img src={logoSAS} alt="SAS - Superintendência de Análise de Sistema" className="h-10 object-contain" />
+        </div>
+      </footer>
     </div>
   );
 };
