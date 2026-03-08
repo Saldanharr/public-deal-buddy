@@ -277,12 +277,42 @@ const mockLiquidacoes: LiquidacaoData[] = [
     valorTotal: 26000.0,
     dataLiquidacao: "2024-06-05",
   },
+  {
+    id: "3",
+    numero: "LIQ-2024-003",
+    empenhoIds: ["4"],
+    descricao: "Liquidação parcial — entrega de mobiliário escolar (1ª remessa)",
+    valorTotal: 95000.0,
+    dataLiquidacao: "2024-09-10",
+  },
+  {
+    id: "4",
+    numero: "LIQ-2024-004",
+    empenhoIds: ["5"],
+    descricao: "Liquidação de material didático — entrega integral",
+    valorTotal: 180000.0,
+    dataLiquidacao: "2024-10-01",
+  },
+  {
+    id: "5",
+    numero: "LIQ-2024-005",
+    empenhoIds: ["6"],
+    descricao: "Liquidação parcial — medição 1ª etapa obra quadra poliesportiva",
+    valorTotal: 135000.0,
+    dataLiquidacao: "2024-11-15",
+  },
 ];
 
 const mockLotes: LoteData[] = [
   { id: "1", numero: "LT-001", descricao: "Material de Limpeza", contratoId: "1", valor: 15000 },
   { id: "2", numero: "LT-002", descricao: "Equipamentos de Informática", contratoId: "1", valor: 87500 },
   { id: "3", numero: "LT-003", descricao: "Serviço de Manutenção Predial", contratoId: "2", valor: 120000 },
+  { id: "4", numero: "LT-004", descricao: "Mesas e Cadeiras Escolares", contratoId: "3", valor: 130000 },
+  { id: "5", numero: "LT-005", descricao: "Armários e Estantes", contratoId: "3", valor: 85000 },
+  { id: "6", numero: "LT-006", descricao: "Livros Didáticos", contratoId: "4", valor: 110000 },
+  { id: "7", numero: "LT-007", descricao: "Material Pedagógico Complementar", contratoId: "4", valor: 70000 },
+  { id: "8", numero: "LT-008", descricao: "Fundação e Estrutura", contratoId: "5", valor: 200000 },
+  { id: "9", numero: "LT-009", descricao: "Cobertura e Acabamento", contratoId: "5", valor: 250000 },
 ];
 
 // ---- Helpers ----
