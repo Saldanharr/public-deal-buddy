@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ScrollText, Receipt, DollarSign, Landmark, Package } from "lucide-react";
+import { ScrollText, Receipt, DollarSign, Landmark, Package, AlertTriangle } from "lucide-react";
 
 // ---- Mock data ----
 
