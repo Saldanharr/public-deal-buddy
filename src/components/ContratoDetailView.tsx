@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ScrollText, Receipt, DollarSign, Landmark, Package } from "lucide-react";
+import { ScrollText, Receipt, DollarSign, Landmark, Package, AlertTriangle } from "lucide-react";
 
 // ---- Mock data ----
 
@@ -189,16 +189,30 @@ const ContratoDetailView = ({ contrato, open, onOpenChange }: ContratoDetailView
   const totalEmpenhado = relatedEmpenhos.reduce((sum, e) => sum + e.valor, 0);
   const totalLiquidado = relatedLiquidacoes.reduce((sum, l) => sum + l.valorTotal, 0);
 
+  const isVencendo = (() => {
+    if (contrato.rescindido || !contrato.vigenciaFim) return false;
+    const hoje = new Date();
+    const fim = new Date(contrato.vigenciaFim + "T00:00:00");
+    const dias = Math.ceil((fim.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+    return dias >= 0 && dias <= 30;
+  })();
+
+  const diasRestantes = contrato.vigenciaFim
+    ? Math.ceil((new Date(contrato.vigenciaFim + "T00:00:00").getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+    : null;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[950px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <ScrollText className="h-5 w-5 text-primary" />
+        <DialogHeader className={isVencendo ? "rounded-lg bg-destructive/10 border border-destructive/20 p-4 -mx-2 -mt-2" : ""}>
+          <DialogTitle className={`flex items-center gap-2 ${isVencendo ? "text-destructive" : ""}`}>
+            {isVencendo ? <AlertTriangle className="h-5 w-5 text-destructive" /> : <ScrollText className="h-5 w-5 text-primary" />}
             Detalhes do Contrato — {contrato.numero}
           </DialogTitle>
-          <DialogDescription>
-            Visualize lotes, empenhos, liquidações e emendas relacionados a este contrato.
+          <DialogDescription className={isVencendo ? "text-destructive/80" : ""}>
+            {isVencendo
+              ? `⚠ Este contrato vence em ${diasRestantes} ${diasRestantes === 1 ? "dia" : "dias"}. Providencie renovação ou encerramento.`
+              : "Visualize lotes, empenhos, liquidações e emendas relacionados a este contrato."}
           </DialogDescription>
         </DialogHeader>
 
