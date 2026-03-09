@@ -515,7 +515,18 @@ const Contratos = () => {
                         <span className="text-muted-foreground">
                           Vigência: {formatDate(c.vigenciaInicio)} — {formatDate(c.vigenciaFim)}
                         </span>
-                        <span className="font-medium text-foreground">{formatCurrency(c.valorTotal)}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-foreground">{formatCurrency(c.valorTotal)}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-2 text-xs gap-1 text-primary hover:text-primary"
+                            onClick={() => { setAlertModalOpen(false); setViewingContrato(c); }}
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                            Ver
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
