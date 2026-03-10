@@ -17,15 +17,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Layers, ScrollText, Receipt, DollarSign, Landmark, Package } from "lucide-react";
+import type { Lote, LoteItem } from "@/pages/Lotes";
+import { produtosServicos } from "@/pages/Lotes";
 
-// ---- Mock data ----
-
-interface ProdutoServicoData {
-  id: string;
-  tipo: string;
-  subtipo: string;
-  descricao: string;
-}
+// ---- Related mock data ----
 
 interface ContratoData {
   id: string;
@@ -35,7 +30,6 @@ interface ContratoData {
   valorTotal: number;
   vigenciaFim: string;
   rescindido: boolean;
-  processoId?: string;
 }
 
 interface EmpenhoData {
@@ -70,26 +64,10 @@ interface EmendaData {
   empenhoIds: string[];
 }
 
-interface LoteInfo {
-  id: string;
-  contratoId: string;
-  produtoServicoId: string;
-  quantidade: number;
-  valor: number;
-  previsaoEntrega: string;
-  entregue: boolean;
-  dataEntrega: string;
-}
-
-const mockProdutosServicos: ProdutoServicoData[] = [
-  { id: "1", tipo: "Material de Consumo", subtipo: "Material de Limpeza", descricao: "Produtos de limpeza para manutenção predial" },
-  { id: "2", tipo: "Serviço", subtipo: "Manutenção Predial", descricao: "Serviço de manutenção corretiva e preventiva" },
-  { id: "3", tipo: "Equipamento", subtipo: "Informática", descricao: "Computadores, monitores e periféricos" },
-];
-
 const mockContratos: ContratoData[] = [
-  { id: "1", numero: "CT-2024-000001", contratado: "Tech Solutions Ltda", objeto: "Manutenção de sistemas", valorTotal: 450000, vigenciaFim: "2025-01-31", rescindido: false, processoId: "1" },
-  { id: "2", numero: "CT-2024-000002", contratado: "Limpeza Total S.A.", objeto: "Serviço de limpeza", valorTotal: 280000, vigenciaFim: "2025-03-09", rescindido: false, processoId: "2" },
+  { id: "1", numero: "CT-2024-000001", contratado: "Tech Solutions Ltda", objeto: "Manutenção de sistemas", valorTotal: 450000, vigenciaFim: "2025-01-31", rescindido: false },
+  { id: "2", numero: "CT-2024-000002", contratado: "Limpeza Total S.A.", objeto: "Serviço de limpeza", valorTotal: 280000, vigenciaFim: "2025-03-09", rescindido: false },
+  { id: "3", numero: "CT-2024-000003", contratado: "Consultoria Brasil Ltda", objeto: "Consultoria administrativa", valorTotal: 150000, vigenciaFim: "2025-06-30", rescindido: false },
 ];
 
 const mockEmpenhos: EmpenhoData[] = [
@@ -121,10 +99,13 @@ const formatDate = (dateStr: string) => {
   return new Date(dateStr + "T00:00:00").toLocaleDateString("pt-BR");
 };
 
+const calcularValorItem = (item: LoteItem) => item.quantidade * item.valorUnitario;
+const calcularValorTotal = (itens: LoteItem[]) => itens.reduce((sum, i) => sum + calcularValorItem(i), 0);
+
 // ---- Component ----
 
 interface LoteDetailViewProps {
-  lote: LoteInfo | null;
+  lote: Lote | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -132,26 +113,22 @@ interface LoteDetailViewProps {
 const LoteDetailView = ({ lote, open, onOpenChange }: LoteDetailViewProps) => {
   if (!lote) return null;
 
-  const produtoServico = mockProdutosServicos.find((ps) => ps.id === lote.produtoServicoId);
+  const valorTotal = calcularValorTotal(lote.itens);
   const contrato = mockContratos.find((c) => c.id === lote.contratoId);
 
-  // Empenhos vinculados ao mesmo contrato do lote
   const relatedEmpenhos = mockEmpenhos.filter((e) => e.contratoId === lote.contratoId);
   const empenhoIds = relatedEmpenhos.map((e) => e.id);
 
-  // Liquidações vinculadas ao lote ou aos empenhos do contrato
   const relatedLiquidacoes = mockLiquidacoes.filter(
     (l) => l.loteIds.includes(lote.id) || l.empenhoIds.some((eid) => empenhoIds.includes(eid))
   );
 
-  // Emendas vinculadas aos empenhos do contrato
   const relatedEmendas = mockEmendas.filter((em) =>
     em.empenhoIds.some((eid) => empenhoIds.includes(eid))
   );
 
-  const totalEmpenhado = relatedEmpenhos.reduce((s, e) => s + e.valor, 0);
   const totalLiquidado = relatedLiquidacoes.reduce((s, l) => s + l.valorTotal, 0);
-  const execucao = lote.valor > 0 ? Math.min(100, Math.round((totalLiquidado / lote.valor) * 100)) : 0;
+  const execucao = valorTotal > 0 ? Math.min(100, Math.round((totalLiquidado / valorTotal) * 100)) : 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -162,7 +139,7 @@ const LoteDetailView = ({ lote, open, onOpenChange }: LoteDetailViewProps) => {
             Detalhes do Lote
           </DialogTitle>
           <DialogDescription>
-            Visualize contrato, produto/serviço, empenhos, liquidações e emendas relacionados a este lote.
+            Visualize itens, contrato, empenhos, liquidações e emendas relacionados a este lote.
           </DialogDescription>
         </DialogHeader>
 
@@ -173,12 +150,12 @@ const LoteDetailView = ({ lote, open, onOpenChange }: LoteDetailViewProps) => {
             <p className="font-semibold">{contrato?.numero || "—"}</p>
           </div>
           <div>
-            <p className="text-muted-foreground text-xs">Valor do Lote</p>
-            <p className="font-semibold">{formatCurrency4(lote.valor)}</p>
+            <p className="text-muted-foreground text-xs">Valor Total do Lote</p>
+            <p className="font-semibold">{formatCurrency4(valorTotal)}</p>
           </div>
           <div>
-            <p className="text-muted-foreground text-xs">Quantidade</p>
-            <p className="font-semibold">{lote.quantidade.toFixed(4)}</p>
+            <p className="text-muted-foreground text-xs">Qtd. Itens</p>
+            <p className="font-semibold">{lote.itens.length}</p>
           </div>
           <div>
             <p className="text-muted-foreground text-xs">Previsão Entrega</p>
@@ -207,17 +184,15 @@ const LoteDetailView = ({ lote, open, onOpenChange }: LoteDetailViewProps) => {
             <p className="text-muted-foreground text-xs">Total Liquidado</p>
             <p className="font-medium">{formatCurrency(totalLiquidado)}</p>
           </div>
-          {produtoServico && (
-            <div className="col-span-2 sm:col-span-4">
-              <p className="text-muted-foreground text-xs">Produto/Serviço</p>
-              <p className="text-sm">{produtoServico.tipo} — {produtoServico.subtipo}: {produtoServico.descricao}</p>
-            </div>
-          )}
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="contrato" className="mt-2">
-          <TabsList className="w-full grid grid-cols-4">
+        <Tabs defaultValue="itens" className="mt-2">
+          <TabsList className="w-full grid grid-cols-5">
+            <TabsTrigger value="itens" className="gap-1 text-xs sm:text-sm">
+              <Package className="h-3.5 w-3.5 hidden sm:block" />
+              Itens ({lote.itens.length})
+            </TabsTrigger>
             <TabsTrigger value="contrato" className="gap-1 text-xs sm:text-sm">
               <ScrollText className="h-3.5 w-3.5 hidden sm:block" />
               Contrato
@@ -235,6 +210,41 @@ const LoteDetailView = ({ lote, open, onOpenChange }: LoteDetailViewProps) => {
               Emendas ({relatedEmendas.length})
             </TabsTrigger>
           </TabsList>
+
+          {/* Itens do Lote */}
+          <TabsContent value="itens">
+            <div className="rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-primary/5">
+                    <TableHead>Tipo/Subtipo</TableHead>
+                    <TableHead>Descrição</TableHead>
+                    <TableHead>Quantidade</TableHead>
+                    <TableHead>Valor Unitário</TableHead>
+                    <TableHead>Subtotal</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {lote.itens.map((item) => {
+                    const ps = produtosServicos.find((p) => p.id === item.produtoServicoId);
+                    return (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-medium">{ps ? `${ps.tipo} - ${ps.subtipo}` : "—"}</TableCell>
+                        <TableCell className="max-w-[200px] truncate text-sm">{ps?.descricao || "—"}</TableCell>
+                        <TableCell>{item.quantidade.toFixed(4)}</TableCell>
+                        <TableCell>{formatCurrency4(item.valorUnitario)}</TableCell>
+                        <TableCell className="font-medium">{formatCurrency4(calcularValorItem(item))}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                  <TableRow className="bg-muted/30 font-bold">
+                    <TableCell colSpan={4} className="text-right">Total do Lote</TableCell>
+                    <TableCell>{formatCurrency4(valorTotal)}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
+          </TabsContent>
 
           {/* Contrato */}
           <TabsContent value="contrato">

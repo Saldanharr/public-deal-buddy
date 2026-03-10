@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Search, Layers, Eye } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Layers, Eye, PlusCircle, X } from "lucide-react";
 import LoteDetailView from "@/components/LoteDetailView";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -45,35 +45,45 @@ interface ContratoRef {
   numero: string;
 }
 
-interface Lote {
+export interface LoteItem {
   id: string;
-  contratoId: string;
   produtoServicoId: string;
   quantidade: number;
-  valor: number;
+  valorUnitario: number;
+}
+
+export interface Lote {
+  id: string;
+  contratoId: string;
+  itens: LoteItem[];
   previsaoEntrega: string;
   entregue: boolean;
   dataEntrega: string;
 }
 
-const produtosServicos: ProdutoServico[] = [
+export const produtosServicos: ProdutoServico[] = [
   { id: "1", tipo: "Material de Consumo", subtipo: "Material de Limpeza", descricao: "Produtos de limpeza para manutenção predial" },
   { id: "2", tipo: "Serviço", subtipo: "Manutenção Predial", descricao: "Serviço de manutenção corretiva e preventiva" },
   { id: "3", tipo: "Equipamento", subtipo: "Informática", descricao: "Computadores, monitores e periféricos" },
+  { id: "4", tipo: "Material de Consumo", subtipo: "Material de Escritório", descricao: "Papel, canetas, grampeadores e afins" },
+  { id: "5", tipo: "Serviço", subtipo: "Consultoria", descricao: "Consultoria em gestão administrativa" },
 ];
 
-const contratosMock: ContratoRef[] = [
+export const contratosMock: ContratoRef[] = [
   { id: "1", numero: "CT-2024-000001" },
   { id: "2", numero: "CT-2024-000002" },
+  { id: "3", numero: "CT-2024-000003" },
 ];
 
 const initialLotes: Lote[] = [
   {
     id: "1",
     contratoId: "1",
-    produtoServicoId: "1",
-    quantidade: 100.0000,
-    valor: 25000.5000,
+    itens: [
+      { id: "1-1", produtoServicoId: "1", quantidade: 200, valorUnitario: 45.50 },
+      { id: "1-2", produtoServicoId: "4", quantidade: 500, valorUnitario: 12.75 },
+      { id: "1-3", produtoServicoId: "3", quantidade: 10, valorUnitario: 4500.00 },
+    ],
     previsaoEntrega: "2024-06-30",
     entregue: true,
     dataEntrega: "2024-06-28",
@@ -81,9 +91,10 @@ const initialLotes: Lote[] = [
   {
     id: "2",
     contratoId: "1",
-    produtoServicoId: "3",
-    quantidade: 50.0000,
-    valor: 87500.0000,
+    itens: [
+      { id: "2-1", produtoServicoId: "3", quantidade: 25, valorUnitario: 5200.00 },
+      { id: "2-2", produtoServicoId: "5", quantidade: 3, valorUnitario: 18000.00 },
+    ],
     previsaoEntrega: "2024-08-15",
     entregue: false,
     dataEntrega: "",
@@ -91,20 +102,46 @@ const initialLotes: Lote[] = [
   {
     id: "3",
     contratoId: "2",
-    produtoServicoId: "2",
-    quantidade: 1.0000,
-    valor: 120000.7500,
+    itens: [
+      { id: "3-1", produtoServicoId: "2", quantidade: 12, valorUnitario: 8500.00 },
+      { id: "3-2", produtoServicoId: "1", quantidade: 300, valorUnitario: 32.00 },
+    ],
     previsaoEntrega: "2024-09-01",
+    entregue: false,
+    dataEntrega: "",
+  },
+  {
+    id: "4",
+    contratoId: "3",
+    itens: [
+      { id: "4-1", produtoServicoId: "5", quantidade: 1, valorUnitario: 75000.00 },
+    ],
+    previsaoEntrega: "2024-10-15",
     entregue: false,
     dataEntrega: "",
   },
 ];
 
-const emptyForm: Omit<Lote, "id"> = {
-  contratoId: "",
+const calcularValorItem = (item: LoteItem) => item.quantidade * item.valorUnitario;
+const calcularValorTotal = (itens: LoteItem[]) => itens.reduce((sum, i) => sum + calcularValorItem(i), 0);
+
+const emptyItem: Omit<LoteItem, "id"> = {
   produtoServicoId: "",
   quantidade: 0,
-  valor: 0,
+  valorUnitario: 0,
+};
+
+interface LoteForm {
+  contratoId: string;
+  itens: LoteItem[];
+  previsaoEntrega: string;
+  entregue: boolean;
+  dataEntrega: string;
+}
+
+const emptyForm: LoteForm = {
+  contratoId: "",
+  itens: [{ id: crypto.randomUUID(), produtoServicoId: "", quantidade: 0, valorUnitario: 0 }],
   previsaoEntrega: "",
   entregue: false,
   dataEntrega: "",
@@ -117,22 +154,11 @@ const Lotes = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [form, setForm] = useState<Omit<Lote, "id">>(emptyForm);
+  const [form, setForm] = useState<LoteForm>(emptyForm);
   const [viewingLote, setViewingLote] = useState<Lote | null>(null);
   const { toast } = useToast();
 
-  const getProdutoServico = (id: string) =>
-    produtosServicos.find((ps) => ps.id === id);
-
-  const getProdutoServicoTipoSubtipo = (id: string) => {
-    const ps = getProdutoServico(id);
-    return ps ? `${ps.tipo} - ${ps.subtipo}` : "—";
-  };
-
-  const getProdutoServicoDescricao = (id: string) => {
-    const ps = getProdutoServico(id);
-    return ps ? ps.descricao : "—";
-  };
+  const getProdutoServico = (id: string) => produtosServicos.find((ps) => ps.id === id);
 
   const getContratoNumero = (id: string) => {
     const c = contratosMock.find((ct) => ct.id === id);
@@ -140,15 +166,17 @@ const Lotes = () => {
   };
 
   const filtered = lotes.filter((lote) => {
-    const ps = getProdutoServico(lote.produtoServicoId);
-    const psText = ps ? `${ps.tipo} ${ps.subtipo} ${ps.descricao}` : "";
-    return psText.toLowerCase().includes(search.toLowerCase()) ||
-      lote.valor.toString().includes(search);
+    const textos = lote.itens.map((item) => {
+      const ps = getProdutoServico(item.produtoServicoId);
+      return ps ? `${ps.tipo} ${ps.subtipo} ${ps.descricao}` : "";
+    }).join(" ");
+    return textos.toLowerCase().includes(search.toLowerCase()) ||
+      calcularValorTotal(lote.itens).toString().includes(search);
   });
 
   const openCreate = () => {
     setEditingId(null);
-    setForm(emptyForm);
+    setForm({ ...emptyForm, itens: [{ id: crypto.randomUUID(), produtoServicoId: "", quantidade: 0, valorUnitario: 0 }] });
     setDialogOpen(true);
   };
 
@@ -156,9 +184,7 @@ const Lotes = () => {
     setEditingId(lote.id);
     setForm({
       contratoId: lote.contratoId,
-      produtoServicoId: lote.produtoServicoId,
-      quantidade: lote.quantidade,
-      valor: lote.valor,
+      itens: lote.itens.map((i) => ({ ...i })),
       previsaoEntrega: lote.previsaoEntrega,
       entregue: lote.entregue,
       dataEntrega: lote.dataEntrega,
@@ -166,22 +192,37 @@ const Lotes = () => {
     setDialogOpen(true);
   };
 
+  const addItem = () => {
+    setForm({
+      ...form,
+      itens: [...form.itens, { id: crypto.randomUUID(), produtoServicoId: "", quantidade: 0, valorUnitario: 0 }],
+    });
+  };
+
+  const removeItem = (itemId: string) => {
+    if (form.itens.length <= 1) return;
+    setForm({ ...form, itens: form.itens.filter((i) => i.id !== itemId) });
+  };
+
+  const updateItem = (itemId: string, field: keyof Omit<LoteItem, "id">, value: string | number) => {
+    setForm({
+      ...form,
+      itens: form.itens.map((i) => (i.id === itemId ? { ...i, [field]: value } : i)),
+    });
+  };
+
   const handleSave = () => {
-    if (!form.contratoId || !form.produtoServicoId || !form.previsaoEntrega) {
-      toast({
-        title: "Campos obrigatórios",
-        description: "Selecione o Contrato, o Produto/Serviço e a Previsão de Entrega.",
-        variant: "destructive",
-      });
+    if (!form.contratoId || !form.previsaoEntrega) {
+      toast({ title: "Campos obrigatórios", description: "Selecione o Contrato e a Previsão de Entrega.", variant: "destructive" });
       return;
     }
-
+    const hasInvalidItem = form.itens.some((i) => !i.produtoServicoId || i.quantidade <= 0 || i.valorUnitario <= 0);
+    if (hasInvalidItem) {
+      toast({ title: "Itens incompletos", description: "Preencha Produto/Serviço, quantidade e valor unitário de todos os itens.", variant: "destructive" });
+      return;
+    }
     if (form.entregue && !form.dataEntrega) {
-      toast({
-        title: "Data de entrega obrigatória",
-        description: "Informe a data da entrega quando o lote estiver marcado como entregue.",
-        variant: "destructive",
-      });
+      toast({ title: "Data de entrega obrigatória", description: "Informe a data da entrega quando o lote estiver marcado como entregue.", variant: "destructive" });
       return;
     }
 
@@ -222,7 +263,7 @@ const Lotes = () => {
               Lotes
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Gerencie os lotes vinculados a contratos e produtos/serviços
+              Gerencie os lotes vinculados a contratos e seus produtos/serviços
             </p>
           </div>
           <Button onClick={openCreate} className="gap-2">
@@ -246,10 +287,9 @@ const Lotes = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Contrato</TableHead>
-                <TableHead>Tipo/Subtipo</TableHead>
-                <TableHead>Descrição</TableHead>
-                <TableHead>Quantidade</TableHead>
-                <TableHead>Valor</TableHead>
+                <TableHead>Produtos/Serviços</TableHead>
+                <TableHead>Qtd. Itens</TableHead>
+                <TableHead>Valor Total</TableHead>
                 <TableHead>Prev. Entrega</TableHead>
                 <TableHead>Entregue</TableHead>
                 <TableHead>Data Entrega</TableHead>
@@ -259,50 +299,47 @@ const Lotes = () => {
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                     Nenhum lote encontrado.
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.map((lote) => (
-                  <TableRow key={lote.id}>
-                    <TableCell className="font-medium">{getContratoNumero(lote.contratoId)}</TableCell>
-                    <TableCell>{getProdutoServicoTipoSubtipo(lote.produtoServicoId)}</TableCell>
-                    <TableCell>{getProdutoServicoDescricao(lote.produtoServicoId)}</TableCell>
-                    <TableCell>{lote.quantidade.toFixed(4)}</TableCell>
-                    <TableCell>{formatCurrency(lote.valor)}</TableCell>
-                    <TableCell>{formatDate(lote.previsaoEntrega)}</TableCell>
-                    <TableCell>
-                      {lote.entregue ? (
-                        <span className="inline-flex items-center rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">
-                          Sim
-                        </span>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">Não</span>
-                      )}
-                    </TableCell>
-                    <TableCell>{lote.entregue ? formatDate(lote.dataEntrega) : "—"}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => setViewingLote(lote)} title="Visualizar">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(lote)} title="Editar">
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => { setDeletingId(lote.id); setDeleteDialogOpen(true); }}
-                          title="Excluir"
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
+                filtered.map((lote) => {
+                  const resumoItens = lote.itens.map((item) => {
+                    const ps = getProdutoServico(item.produtoServicoId);
+                    return ps ? `${ps.subtipo}` : "—";
+                  }).join(", ");
+                  return (
+                    <TableRow key={lote.id}>
+                      <TableCell className="font-medium">{getContratoNumero(lote.contratoId)}</TableCell>
+                      <TableCell className="max-w-[250px] truncate text-sm" title={resumoItens}>{resumoItens}</TableCell>
+                      <TableCell>{lote.itens.length}</TableCell>
+                      <TableCell className="font-medium">{formatCurrency(calcularValorTotal(lote.itens))}</TableCell>
+                      <TableCell>{formatDate(lote.previsaoEntrega)}</TableCell>
+                      <TableCell>
+                        {lote.entregue ? (
+                          <span className="inline-flex items-center rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">Sim</span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Não</span>
+                        )}
+                      </TableCell>
+                      <TableCell>{lote.entregue ? formatDate(lote.dataEntrega) : "—"}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => setViewingLote(lote)} title="Visualizar">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => openEdit(lote)} title="Editar">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => { setDeletingId(lote.id); setDeleteDialogOpen(true); }} title="Excluir" className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
@@ -310,7 +347,7 @@ const Lotes = () => {
 
         {/* Create/Edit Dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-[750px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingId ? "Editar Lote" : "Novo Lote"}</DialogTitle>
               <DialogDescription>
@@ -319,109 +356,95 @@ const Lotes = () => {
             </DialogHeader>
 
             <div className="grid gap-4 py-4">
-              <div className="space-y-2">
-                <Label>Contrato *</Label>
-                <Select
-                  value={form.contratoId}
-                  onValueChange={(value) => setForm({ ...form, contratoId: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o contrato" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {contratosMock.map((ct) => (
-                      <SelectItem key={ct.id} value={ct.id}>
-                        {ct.numero}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Descrição do Lote (Produto/Serviço) *</Label>
-                <Select
-                  value={form.produtoServicoId}
-                  onValueChange={(value) => setForm({ ...form, produtoServicoId: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um produto/serviço" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {produtosServicos.map((ps) => (
-                      <SelectItem key={ps.id} value={ps.id}>
-                        {ps.tipo} - {ps.subtipo}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="quantidade">Quantidade *</Label>
-                  <Input
-                    id="quantidade"
-                    type="number"
-                    step="0.0001"
-                    min="0"
-                    placeholder="0.0000"
-                    value={form.quantidade || ""}
-                    onChange={(e) =>
-                      setForm({ ...form, quantidade: parseFloat(parseFloat(e.target.value).toFixed(4)) || 0 })
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="valor">Valor do Lote (R$) *</Label>
-                  <Input
-                    id="valor"
-                    type="number"
-                    step="0.0001"
-                    min="0"
-                    placeholder="0.0000"
-                    value={form.valor || ""}
-                    onChange={(e) =>
-                      setForm({ ...form, valor: parseFloat(parseFloat(e.target.value).toFixed(4)) || 0 })
-                    }
-                  />
+                  <Label>Contrato *</Label>
+                  <Select value={form.contratoId} onValueChange={(value) => setForm({ ...form, contratoId: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o contrato" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {contratosMock.map((ct) => (
+                        <SelectItem key={ct.id} value={ct.id}>{ct.numero}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="previsaoEntrega">Previsão de Entrega *</Label>
-                  <Input
-                    id="previsaoEntrega"
-                    type="date"
-                    value={form.previsaoEntrega}
-                    onChange={(e) => setForm({ ...form, previsaoEntrega: e.target.value })}
-                  />
+                  <Input id="previsaoEntrega" type="date" value={form.previsaoEntrega} onChange={(e) => setForm({ ...form, previsaoEntrega: e.target.value })} />
+                </div>
+              </div>
+
+              {/* Itens do Lote */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-semibold">Itens do Lote</Label>
+                  <Button type="button" variant="outline" size="sm" onClick={addItem} className="gap-1">
+                    <PlusCircle className="h-3.5 w-3.5" />
+                    Adicionar Item
+                  </Button>
+                </div>
+
+                <div className="space-y-3">
+                  {form.itens.map((item, idx) => (
+                    <div key={item.id} className="rounded-lg border bg-muted/20 p-3 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-muted-foreground">Item {idx + 1}</span>
+                        {form.itens.length > 1 && (
+                          <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={() => removeItem(item.id)}>
+                            <X className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">Produto/Serviço *</Label>
+                        <Select value={item.produtoServicoId} onValueChange={(value) => updateItem(item.id, "produtoServicoId", value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {produtosServicos.map((ps) => (
+                              <SelectItem key={ps.id} value={ps.id}>{ps.tipo} - {ps.subtipo}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Quantidade *</Label>
+                          <Input type="number" step="0.0001" min="0" placeholder="0.0000" value={item.quantidade || ""} onChange={(e) => updateItem(item.id, "quantidade", parseFloat(parseFloat(e.target.value).toFixed(4)) || 0)} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Valor Unitário (R$) *</Label>
+                          <Input type="number" step="0.0001" min="0" placeholder="0.0000" value={item.valorUnitario || ""} onChange={(e) => updateItem(item.id, "valorUnitario", parseFloat(parseFloat(e.target.value).toFixed(4)) || 0)} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Subtotal</Label>
+                          <Input readOnly value={formatCurrency(calcularValorItem(item))} className="bg-muted/50 font-medium" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex justify-end rounded-lg border bg-primary/5 p-3">
+                  <div className="text-right">
+                    <span className="text-xs text-muted-foreground">Valor Total do Lote</span>
+                    <p className="text-lg font-bold text-foreground">{formatCurrency(calcularValorTotal(form.itens))}</p>
+                  </div>
                 </div>
               </div>
 
               <div className="flex items-center gap-3 pt-2">
-                <Checkbox
-                  id="entregue"
-                  checked={form.entregue}
-                  onCheckedChange={(checked) =>
-                    setForm({
-                      ...form,
-                      entregue: !!checked,
-                      dataEntrega: checked ? form.dataEntrega : "",
-                    })
-                  }
-                />
-                <Label htmlFor="entregue" className="cursor-pointer">
-                  Entregue
-                </Label>
+                <Checkbox id="entregue" checked={form.entregue} onCheckedChange={(checked) => setForm({ ...form, entregue: !!checked, dataEntrega: checked ? form.dataEntrega : "" })} />
+                <Label htmlFor="entregue" className="cursor-pointer">Entregue</Label>
               </div>
 
               {form.entregue && (
                 <div className="space-y-2">
                   <Label htmlFor="dataEntrega">Data da Entrega *</Label>
-                  <Input
-                    id="dataEntrega"
-                    type="date"
-                    value={form.dataEntrega}
-                    onChange={(e) => setForm({ ...form, dataEntrega: e.target.value })}
-                  />
+                  <Input id="dataEntrega" type="date" value={form.dataEntrega} onChange={(e) => setForm({ ...form, dataEntrega: e.target.value })} />
                 </div>
               )}
             </div>
@@ -438,9 +461,7 @@ const Lotes = () => {
           <DialogContent className="sm:max-w-[400px]">
             <DialogHeader>
               <DialogTitle>Confirmar Exclusão</DialogTitle>
-              <DialogDescription>
-                Tem certeza que deseja excluir este lote? Esta ação não pode ser desfeita.
-              </DialogDescription>
+              <DialogDescription>Tem certeza que deseja excluir este lote? Esta ação não pode ser desfeita.</DialogDescription>
             </DialogHeader>
             <DialogFooter>
               <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancelar</Button>
