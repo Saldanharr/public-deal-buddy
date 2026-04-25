@@ -1,6 +1,6 @@
 import DashboardLayout from "@/components/DashboardLayout";
 import StatsCard from "@/components/StatsCard";
-import { EmpenhoChart, ContratosChart } from "@/components/DashboardCharts";
+import { EmpenhoChart, ContratosChart, ProdutosServicosResumo } from "@/components/DashboardCharts";
 import RecentContractsTable from "@/components/RecentContractsTable";
 import { FileText, ScrollText, Receipt, DollarSign, Wallet, Package, Search, Bell } from "lucide-react";
 
@@ -42,6 +42,11 @@ const Index = () => {
       <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
         <EmpenhoChart />
         <ContratosChart />
+      </div>
+
+      {/* Product/Service Summary */}
+      <div className="mb-6">
+        <ProdutosServicosResumo />
       </div>
 
       {/* Table */}
