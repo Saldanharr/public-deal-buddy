@@ -21,10 +21,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Pencil, Trash2, Search, DollarSign } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, DollarSign, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import LiquidacaoDetailView from "@/components/LiquidacaoDetailView";
 
 // --- Mock references ---
 interface EmpenhoRef {
@@ -107,6 +108,8 @@ const Liquidacoes = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [selectedLiquidacao, setSelectedLiquidacao] = useState<Liquidacao | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
   const [form, setForm] = useState<LiquidacaoForm>(emptyForm);
   const { toast } = useToast();
 
@@ -309,6 +312,17 @@ const Liquidacoes = () => {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setSelectedLiquidacao(liq);
+                            setDetailOpen(true);
+                          }}
+                          title="Visualizar"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={() => openEdit(liq)} title="Editar">
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -332,6 +346,14 @@ const Liquidacoes = () => {
             </TableBody>
           </Table>
         </div>
+
+        <LiquidacaoDetailView
+          liquidacao={selectedLiquidacao}
+          empenhos={empenhosMock}
+          lotes={lotesMock}
+          open={detailOpen}
+          onOpenChange={setDetailOpen}
+        />
 
         {/* Create/Edit Dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
