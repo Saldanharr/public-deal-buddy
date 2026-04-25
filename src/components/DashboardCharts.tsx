@@ -1,4 +1,5 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { initialLotes, produtosServicos, calcularValorItem } from "@/pages/Lotes";
 
 const barData = [
   { month: "Jan", empenhos: 45, liquidacoes: 38 },
@@ -22,6 +23,29 @@ const PIE_COLORS = [
   "hsl(40, 90%, 55%)",
   "hsl(280, 45%, 55%)",
 ];
+
+const produtoServicoResumo = produtosServicos
+  .map((produtoServico) => {
+    const valorTotal = initialLotes.reduce((total, lote) => {
+      const totalProdutoNoLote = lote.itens
+        .filter((item) => item.produtoServicoId === produtoServico.id)
+        .reduce((sum, item) => sum + calcularValorItem(item), 0);
+
+      return total + totalProdutoNoLote;
+    }, 0);
+
+    return {
+      nome: produtoServico.subtipo,
+      descricao: produtoServico.descricao,
+      tipo: produtoServico.tipo,
+      valorTotal,
+    };
+  })
+  .filter((item) => item.valorTotal > 0)
+  .sort((a, b) => b.valorTotal - a.valorTotal);
+
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
 
 export const EmpenhoChart = () => (
   <div className="rounded-xl bg-card border border-border p-5 animate-fade-in">
@@ -100,6 +124,34 @@ export const ContratosChart = () => (
           </div>
         ))}
       </div>
+    </div>
+  </div>
+);
+
+export const ProdutosServicosResumo = () => (
+  <div className="rounded-xl bg-card border border-border p-5 animate-fade-in">
+    <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h3 className="text-sm font-semibold text-card-foreground">Resumo por Produto/Serviço</h3>
+        <p className="text-xs text-muted-foreground">Valores totais agrupados nos lotes</p>
+      </div>
+      <span className="text-sm font-semibold text-primary">
+        {formatCurrency(produtoServicoResumo.reduce((sum, item) => sum + item.valorTotal, 0))}
+      </span>
+    </div>
+    <div className="space-y-3">
+      {produtoServicoResumo.map((item) => (
+        <div key={item.nome} className="grid gap-3 rounded-lg border border-border bg-muted/30 p-3 sm:grid-cols-[1fr_auto] sm:items-center">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-sm font-semibold text-card-foreground">{item.nome}</p>
+              <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">{item.tipo}</span>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">{item.descricao}</p>
+          </div>
+          <p className="text-sm font-bold text-primary sm:text-right">{formatCurrency(item.valorTotal)}</p>
+        </div>
+      ))}
     </div>
   </div>
 );

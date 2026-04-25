@@ -75,7 +75,7 @@ export const contratosMock: ContratoRef[] = [
   { id: "3", numero: "CT-2024-000003" },
 ];
 
-const initialLotes: Lote[] = [
+export const initialLotes: Lote[] = [
   {
     id: "1",
     contratoId: "1",
@@ -122,8 +122,8 @@ const initialLotes: Lote[] = [
   },
 ];
 
-const calcularValorItem = (item: LoteItem) => item.quantidade * item.valorUnitario;
-const calcularValorTotal = (itens: LoteItem[]) => itens.reduce((sum, i) => sum + calcularValorItem(i), 0);
+export const calcularValorItem = (item: LoteItem) => item.quantidade * item.valorUnitario;
+export const calcularValorTotal = (itens: LoteItem[]) => itens.reduce((sum, i) => sum + calcularValorItem(i), 0);
 
 const emptyItem: Omit<LoteItem, "id"> = {
   produtoServicoId: "",
