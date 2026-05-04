@@ -123,6 +123,27 @@ const LiquidacaoDetailView = ({ liquidacao, empenhos, lotes, open, onOpenChange 
           </DialogDescription>
         </DialogHeader>
 
+        <div className={`rounded-lg border p-4 flex flex-col sm:flex-row sm:items-center gap-3 ${statusConfig[status].className}`}>
+          <div className="flex items-center gap-2">
+            <StatusIcon className="h-5 w-5" />
+            <div>
+              <p className="text-xs uppercase tracking-wide opacity-80">Status</p>
+              <p className="text-base font-bold">{statusConfig[status].label}</p>
+            </div>
+          </div>
+          <div className="flex-1 sm:ml-4">
+            <div className="flex justify-between text-xs mb-1">
+              <span className="opacity-80">Liquidado vs. Empenhado</span>
+              <span className="font-semibold">{percentual.toFixed(1)}%</span>
+            </div>
+            <Progress value={percentual} className={`h-2 bg-background/50 ${statusConfig[status].progressClass}`} />
+            <div className="flex justify-between text-xs mt-1 opacity-80">
+              <span>{formatCurrency(liquidacao.valorTotal)}</span>
+              <span>de {formatCurrency(totalEmpenhado)}</span>
+            </div>
+          </div>
+        </div>
+
         <div className="rounded-lg border bg-muted/30 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
           <div>
             <p className="text-muted-foreground text-xs">Nº Liquidação</p>
