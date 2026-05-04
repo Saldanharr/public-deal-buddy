@@ -79,6 +79,37 @@ const LiquidacaoDetailView = ({ liquidacao, empenhos, lotes, open, onOpenChange 
   const totalEmpenhado = relatedEmpenhos.reduce((sum, emp) => sum + emp.valor, 0);
   const contratos = Array.from(new Set(relatedLotes.map((item) => item.lote?.contratoNumero).filter(Boolean)));
 
+  const percentual = totalEmpenhado > 0 ? Math.min((liquidacao.valorTotal / totalEmpenhado) * 100, 100) : 0;
+  type StatusKey = "pendente" | "parcial" | "integral";
+  const status: StatusKey =
+    liquidacao.valorTotal <= 0
+      ? "pendente"
+      : liquidacao.valorTotal >= totalEmpenhado && totalEmpenhado > 0
+      ? "integral"
+      : "parcial";
+
+  const statusConfig: Record<StatusKey, { label: string; icon: typeof CheckCircle2; className: string; progressClass: string }> = {
+    pendente: {
+      label: "Pendente",
+      icon: CircleSlash,
+      className: "bg-muted text-muted-foreground border-border",
+      progressClass: "[&>div]:bg-muted-foreground",
+    },
+    parcial: {
+      label: "Parcial",
+      icon: CircleDashed,
+      className: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30",
+      progressClass: "[&>div]:bg-amber-500",
+    },
+    integral: {
+      label: "Integral",
+      icon: CheckCircle2,
+      className: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
+      progressClass: "[&>div]:bg-emerald-500",
+    },
+  };
+  const StatusIcon = statusConfig[status].icon;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
