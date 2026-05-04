@@ -15,7 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { DollarSign, Layers, Receipt, ScrollText } from "lucide-react";
+import { CheckCircle2, CircleDashed, CircleSlash, DollarSign, Layers, Receipt, ScrollText } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
