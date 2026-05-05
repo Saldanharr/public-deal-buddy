@@ -106,7 +106,7 @@ export const mockEmpenhos: EmpenhoData[] = [
   },
 ];
 
-const mockLiquidacoes: LiquidacaoData[] = [
+export const mockLiquidacoes: LiquidacaoData[] = [
   {
     id: "1",
     numero: "LIQ-2024-001",
