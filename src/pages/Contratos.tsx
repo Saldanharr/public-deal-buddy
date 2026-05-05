@@ -396,6 +396,7 @@ const Contratos = () => {
               </TableBody>
             </Table>
           </div>
+        </div>
 
         {/* Create/Edit Dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
