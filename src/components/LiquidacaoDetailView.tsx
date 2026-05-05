@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CheckCircle2, CircleDashed, CircleSlash, DollarSign, Layers, Receipt, ScrollText } from "lucide-react";
+import { AlertTriangle, CheckCircle2, CircleDashed, CircleSlash, DollarSign, Layers, Receipt, ScrollText } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -110,6 +110,10 @@ const LiquidacaoDetailView = ({ liquidacao, empenhos, lotes, open, onOpenChange 
   };
   const StatusIcon = statusConfig[status].icon;
 
+  const diferenca = totalEmpenhado - liquidacao.valorTotal;
+  const diferencaPercentual = totalEmpenhado > 0 ? (Math.abs(diferenca) / totalEmpenhado) * 100 : 0;
+  const divergenciaRelevante = totalEmpenhado > 0 && diferencaPercentual > 5 && status !== "integral";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
@@ -143,6 +147,20 @@ const LiquidacaoDetailView = ({ liquidacao, empenhos, lotes, open, onOpenChange 
             </div>
           </div>
         </div>
+
+        {divergenciaRelevante && (
+          <div className="rounded-lg border border-destructive/40 bg-destructive/10 text-destructive p-3 flex items-start gap-2 text-sm animate-in fade-in">
+            <AlertTriangle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="font-semibold">Divergência relevante detectada ({diferencaPercentual.toFixed(1)}%)</p>
+              <p className="text-xs opacity-90">
+                Diferença de <span className="font-semibold">{formatCurrency(Math.abs(diferenca))}</span>{" "}
+                {diferenca > 0 ? "a liquidar em relação ao empenhado." : "liquidada acima do valor empenhado."}
+              </p>
+            </div>
+            <Badge variant="destructive" className="ml-auto whitespace-nowrap">&gt; 5%</Badge>
+          </div>
+        )}
 
         <div className="rounded-lg border bg-muted/30 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
           <div>
