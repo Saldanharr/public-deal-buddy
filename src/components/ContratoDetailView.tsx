@@ -189,6 +189,10 @@ const ContratoDetailView = ({ contrato, open, onOpenChange }: ContratoDetailView
   const totalEmpenhado = relatedEmpenhos.reduce((sum, e) => sum + e.valor, 0);
   const totalLiquidado = relatedLiquidacoes.reduce((sum, l) => sum + l.valorTotal, 0);
 
+  const diferenca = totalEmpenhado - totalLiquidado;
+  const diferencaPercentual = totalEmpenhado > 0 ? (Math.abs(diferenca) / totalEmpenhado) * 100 : 0;
+  const divergenciaRelevante = totalEmpenhado > 0 && diferencaPercentual > 5;
+
   const isVencendo = (() => {
     if (contrato.rescindido || !contrato.vigenciaFim) return false;
     const hoje = new Date();
@@ -257,6 +261,22 @@ const ContratoDetailView = ({ contrato, open, onOpenChange }: ContratoDetailView
             <p className="text-sm">{contrato.objeto || "—"}</p>
           </div>
         </div>
+
+        {divergenciaRelevante && (
+          <div className="rounded-lg border border-destructive/40 bg-destructive/10 text-destructive p-3 flex items-start gap-2 text-sm">
+            <AlertTriangle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="font-semibold">
+                Divergência relevante entre liquidado e empenhado ({diferencaPercentual.toFixed(1)}%)
+              </p>
+              <p className="text-xs opacity-90">
+                Diferença de <span className="font-semibold">{formatCurrency(Math.abs(diferenca))}</span>{" "}
+                {diferenca > 0 ? "ainda a liquidar." : "liquidada acima do valor empenhado."}
+              </p>
+            </div>
+            <Badge variant="destructive" className="ml-auto whitespace-nowrap">&gt; 5%</Badge>
+          </div>
+        )}
 
         {/* Tabs */}
         <Tabs defaultValue="lotes" className="mt-2">
