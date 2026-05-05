@@ -73,7 +73,7 @@ interface ContratoInfo {
   rescindido: boolean;
 }
 
-const mockEmpenhos: EmpenhoData[] = [
+export const mockEmpenhos: EmpenhoData[] = [
   {
     id: "1",
     numero: "2024NE000123",
