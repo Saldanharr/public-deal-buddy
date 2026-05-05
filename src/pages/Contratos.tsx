@@ -155,6 +155,7 @@ const Contratos = () => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [form, setForm] = useState<Omit<Contrato, "id">>(emptyForm);
   const [viewingContrato, setViewingContrato] = useState<Contrato | null>(null);
+  const [sortByRisk, setSortByRisk] = useState(true);
   const [alertModalOpen, setAlertModalOpen] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const { toast } = useToast();
