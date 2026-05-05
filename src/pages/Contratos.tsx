@@ -30,7 +30,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { Plus, Search, Pencil, Trash2, ScrollText, Eye, AlertTriangle, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import ContratoDetailView from "@/components/ContratoDetailView";
+import ContratoDetailView, { getContratoRisk, RISK_PRIORITY, RISK_LABEL, type RiskLevel } from "@/components/ContratoDetailView";
+import { ArrowDownAZ, ArrowUpDown } from "lucide-react";
 
 interface Processo {
   id: string;
@@ -154,6 +155,7 @@ const Contratos = () => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [form, setForm] = useState<Omit<Contrato, "id">>(emptyForm);
   const [viewingContrato, setViewingContrato] = useState<Contrato | null>(null);
+  const [sortByRisk, setSortByRisk] = useState(true);
   const [alertModalOpen, setAlertModalOpen] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const { toast } = useToast();
@@ -183,6 +185,21 @@ const Contratos = () => {
       c.contratado.toLowerCase().includes(search.toLowerCase()) ||
       c.nupContrato.toLowerCase().includes(search.toLowerCase())
   );
+
+  const withRisk = filtered.map((c) => ({ contrato: c, risk: getContratoRisk(c.id) }));
+  const sorted = sortByRisk
+    ? [...withRisk].sort((a, b) => RISK_PRIORITY[a.risk.level] - RISK_PRIORITY[b.risk.level])
+    : withRisk;
+
+  const riskBadgeClass = (level: RiskLevel) => {
+    switch (level) {
+      case "divergente": return "bg-destructive/15 text-destructive border-destructive/30";
+      case "pendente": return "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30";
+      case "parcial": return "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30";
+      case "integral": return "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30";
+      default: return "bg-muted text-muted-foreground border-border";
+    }
+  };
 
   const openNew = () => {
     setForm(emptyForm);
@@ -282,15 +299,37 @@ const Contratos = () => {
             </Button>
           </div>
 
-          <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por número, contratado, NUP..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
-            />
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="relative max-w-sm flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por número, contratado, NUP..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Button
+              variant={sortByRisk ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSortByRisk((v) => !v)}
+              className="gap-2"
+            >
+              {sortByRisk ? <ArrowDownAZ className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+              {sortByRisk ? "Ordenado por risco" : "Ordenar por risco"}
+            </Button>
           </div>
+
+          {sortByRisk && (
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <span>Prioridade:</span>
+              {(["divergente","pendente","parcial","integral"] as RiskLevel[]).map((lvl) => (
+                <span key={lvl} className={`inline-flex items-center rounded-full border px-2 py-0.5 font-medium ${riskBadgeClass(lvl)}`}>
+                  {RISK_LABEL[lvl]}
+                </span>
+              ))}
+            </div>
+          )}
 
           <div className="rounded-lg border bg-card">
             <Table>
@@ -301,19 +340,20 @@ const Contratos = () => {
                   <TableHead>NUP Processo</TableHead>
                   <TableHead>Valor Total</TableHead>
                   <TableHead>Vigência</TableHead>
+                  <TableHead>Risco</TableHead>
                   <TableHead>Rescindido</TableHead>
                   <TableHead className="w-[100px]">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.length === 0 ? (
+                {sorted.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                       Nenhum contrato encontrado
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filtered.map((c) => (
+                  sorted.map(({ contrato: c, risk }) => (
                     <TableRow key={c.id}>
                       <TableCell className="font-medium">{c.numero}</TableCell>
                       <TableCell>{c.contratado}</TableCell>
@@ -321,6 +361,16 @@ const Contratos = () => {
                       <TableCell>{formatCurrency(c.valorTotal)}</TableCell>
                       <TableCell className="text-xs">
                         {formatDate(c.vigenciaInicio)} — {formatDate(c.vigenciaFim)}
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${riskBadgeClass(risk.level)}`}
+                          title={`Empenhado: ${formatCurrency(risk.totalEmpenhado)} • Liquidado: ${formatCurrency(risk.totalLiquidado)}${risk.totalEmpenhado > 0 ? ` • Diferença: ${risk.diferencaPercentual.toFixed(1)}%` : ""}`}
+                        >
+                          {risk.level === "divergente" && <AlertTriangle className="h-3 w-3" />}
+                          {RISK_LABEL[risk.level]}
+                          {risk.level === "divergente" && ` (${risk.diferencaPercentual.toFixed(0)}%)`}
+                        </span>
                       </TableCell>
                       <TableCell>
                         <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${c.rescindido ? "bg-destructive/10 text-destructive" : "bg-accent text-accent-foreground"}`}>
