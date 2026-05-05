@@ -30,7 +30,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { Plus, Search, Pencil, Trash2, ScrollText, Eye, AlertTriangle, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import ContratoDetailView from "@/components/ContratoDetailView";
+import ContratoDetailView, { getContratoRisk, RISK_PRIORITY, RISK_LABEL, type RiskLevel } from "@/components/ContratoDetailView";
+import { ArrowDownAZ, ArrowUpDown } from "lucide-react";
 
 interface Processo {
   id: string;
