@@ -453,3 +453,56 @@ const ContratoDetailView = ({ contrato, open, onOpenChange }: ContratoDetailView
 };
 
 export default ContratoDetailView;
+
+export type RiskLevel = "divergente" | "pendente" | "parcial" | "integral" | "sem_empenho";
+
+export interface ContratoRiskInfo {
+  level: RiskLevel;
+  totalEmpenhado: number;
+  totalLiquidado: number;
+  diferencaPercentual: number;
+  execucaoPercentual: number;
+}
+
+export const getContratoRisk = (contratoId: string): ContratoRiskInfo => {
+  const empenhos = mockEmpenhos.filter((e) => e.contratoId === contratoId);
+  const empenhoIds = new Set(empenhos.map((e) => e.id));
+  const liqs = mockLiquidacoes.filter((l) => l.empenhoIds.some((id) => empenhoIds.has(id)));
+  const totalEmpenhado = empenhos.reduce((s, e) => s + e.valor, 0);
+  const totalLiquidado = liqs.reduce((s, l) => s + l.valorTotal, 0);
+  const execucaoPercentual = totalEmpenhado > 0 ? (totalLiquidado / totalEmpenhado) * 100 : 0;
+  const diferenca = totalEmpenhado - totalLiquidado;
+  const diferencaPercentual = totalEmpenhado > 0 ? (Math.abs(diferenca) / totalEmpenhado) * 100 : 0;
+
+  let level: RiskLevel;
+  if (totalEmpenhado === 0) level = "sem_empenho";
+  else if (execucaoPercentual >= 99.5) level = "integral";
+  else if (diferencaPercentual > 5 && totalLiquidado > 0) level = "divergente";
+  else if (totalLiquidado === 0) level = "pendente";
+  else level = "parcial";
+
+  // Reclassify "pendente" if there's no liquidation but >5% (always >5% if 0 liq)
+  if (level === "pendente" && totalEmpenhado > 0) {
+    // pendente means 0 liquidado — keep as pendente (not divergente)
+  }
+
+  return { level, totalEmpenhado, totalLiquidado, diferencaPercentual, execucaoPercentual };
+};
+
+// Risk priority for sorting (lower = higher priority for review)
+export const RISK_PRIORITY: Record<RiskLevel, number> = {
+  divergente: 0,
+  pendente: 1,
+  parcial: 2,
+  integral: 3,
+  sem_empenho: 4,
+};
+
+export const RISK_LABEL: Record<RiskLevel, string> = {
+  divergente: "Divergência",
+  pendente: "Pendente",
+  parcial: "Parcial",
+  integral: "Integral",
+  sem_empenho: "Sem empenho",
+};
+
