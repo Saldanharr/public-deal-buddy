@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CheckCircle2, CircleDashed, CircleSlash, DollarSign, Layers, Receipt, ScrollText } from "lucide-react";
+import { AlertTriangle, CheckCircle2, CircleDashed, CircleSlash, DollarSign, Layers, Receipt, ScrollText } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -109,6 +109,10 @@ const LiquidacaoDetailView = ({ liquidacao, empenhos, lotes, open, onOpenChange 
     },
   };
   const StatusIcon = statusConfig[status].icon;
+
+  const diferenca = totalEmpenhado - liquidacao.valorTotal;
+  const diferencaPercentual = totalEmpenhado > 0 ? (Math.abs(diferenca) / totalEmpenhado) * 100 : 0;
+  const divergenciaRelevante = totalEmpenhado > 0 && diferencaPercentual > 5 && status !== "integral";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
