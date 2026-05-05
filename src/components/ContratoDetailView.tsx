@@ -189,6 +189,10 @@ const ContratoDetailView = ({ contrato, open, onOpenChange }: ContratoDetailView
   const totalEmpenhado = relatedEmpenhos.reduce((sum, e) => sum + e.valor, 0);
   const totalLiquidado = relatedLiquidacoes.reduce((sum, l) => sum + l.valorTotal, 0);
 
+  const diferenca = totalEmpenhado - totalLiquidado;
+  const diferencaPercentual = totalEmpenhado > 0 ? (Math.abs(diferenca) / totalEmpenhado) * 100 : 0;
+  const divergenciaRelevante = totalEmpenhado > 0 && diferencaPercentual > 5;
+
   const isVencendo = (() => {
     if (contrato.rescindido || !contrato.vigenciaFim) return false;
     const hoje = new Date();
