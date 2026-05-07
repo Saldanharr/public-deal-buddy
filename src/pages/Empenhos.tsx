@@ -257,10 +257,36 @@ const Empenhos = () => {
                         </span>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2 min-w-[100px]">
-                          <Progress value={execucao} className="h-2 w-16" />
-                          <span className="text-xs font-medium text-muted-foreground">{execucao}%</span>
-                        </div>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex items-center gap-2 min-w-[100px] cursor-help">
+                              <Progress value={execucao} className="h-2 w-16" />
+                              <span className="text-xs font-medium text-muted-foreground">{execucao}%</span>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-xs">
+                            <div className="space-y-1 text-xs">
+                              <p className="font-semibold">
+                                {execucao === 0
+                                  ? "Pendente"
+                                  : execucao >= 100
+                                  ? "Execução integral"
+                                  : "Execução parcial"}
+                              </p>
+                              <p className="opacity-90">
+                                {execucao === 0
+                                  ? "Nenhuma liquidação registrada para este empenho."
+                                  : execucao >= 100
+                                  ? "Valor liquidado equivale ao total empenhado."
+                                  : `${execucao}% do valor empenhado já foi liquidado. Saldo a liquidar: ${formatCurrency(empenho.valor * (1 - execucao / 100))}.`}
+                              </p>
+                              <div className="pt-1 border-t border-border/40 space-y-0.5">
+                                <p>Empenhado: <span className="font-medium">{formatCurrency(empenho.valor)}</span></p>
+                                <p>Liquidado: <span className="font-medium">{formatCurrency(empenho.valor * execucao / 100)}</span></p>
+                              </div>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
                       </TableCell>
                       <TableCell className="font-medium">{empenho.numero}</TableCell>
                       <TableCell>{formatDate(empenho.dataEmpenho)}</TableCell>
