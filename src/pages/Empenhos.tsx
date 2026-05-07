@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Pencil, Trash2, Search, Receipt, Eye } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Receipt, Eye, AlertTriangle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -92,7 +92,18 @@ const Empenhos = () => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [form, setForm] = useState<Omit<Empenho, "id">>(emptyForm);
   const [viewingEmpenho, setViewingEmpenho] = useState<Empenho | null>(null);
+  const [saldoLimite, setSaldoLimite] = useState<number>(50000);
   const { toast } = useToast();
+
+  // Mock execução estável por empenho (substituir por dados reais)
+  const execucaoMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    empenhos.forEach((e) => {
+      const seed = parseInt(e.id.replace(/\D/g, "") || "1", 10) || e.numero.length;
+      map[e.id] = (seed * 37) % 101;
+    });
+    return map;
+  }, [empenhos]);
 
   const filtered = empenhos.filter(
     (e) =>
@@ -184,16 +195,49 @@ const Empenhos = () => {
           </Button>
         </div>
 
-        {/* Search */}
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por número, assunto ou elemento..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-          />
+        {/* Search + Limite */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+          <div className="relative max-w-md flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por número, assunto ou elemento..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Label htmlFor="saldoLimite" className="text-xs text-muted-foreground whitespace-nowrap flex items-center gap-1">
+              <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
+              Alertar saldo a liquidar &gt;
+            </Label>
+            <Input
+              id="saldoLimite"
+              type="number"
+              min="0"
+              step="1000"
+              value={saldoLimite}
+              onChange={(e) => setSaldoLimite(Math.max(0, parseFloat(e.target.value) || 0))}
+              className="w-32 h-9"
+            />
+            <span className="text-xs text-muted-foreground">R$</span>
+          </div>
         </div>
+
+        {(() => {
+          const alertCount = filtered.filter((e) => {
+            const exec = execucaoMap[e.id] ?? 0;
+            return e.valor * (1 - exec / 100) > saldoLimite;
+          }).length;
+          return alertCount > 0 ? (
+            <div className="flex items-center gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <span>
+                <strong>{alertCount}</strong> empenho(s) com saldo a liquidar acima de {formatCurrency(saldoLimite)}.
+              </span>
+            </div>
+          ) : null;
+        })()}
 
         {/* Table */}
         <div className="rounded-lg border bg-card">
@@ -220,11 +264,12 @@ const Empenhos = () => {
                 </TableRow>
               ) : (
                 filtered.map((empenho) => {
-                  // Mock execution percentage (replace with real data later)
-                  const execucao = Math.floor(Math.random() * 101);
+                  const execucao = execucaoMap[empenho.id] ?? 0;
                   const temSaldo = execucao < 100;
+                  const saldoLiquidar = empenho.valor * (1 - execucao / 100);
+                  const acimaLimite = saldoLiquidar > saldoLimite;
                   return (
-                    <TableRow key={empenho.id}>
+                    <TableRow key={empenho.id} className={acimaLimite ? "bg-destructive/5 hover:bg-destructive/10" : undefined}>
                       <TableCell>
                         {empenho.emendaParlamentar ? (
                           <span className="inline-flex items-center rounded-full bg-destructive/10 text-destructive px-2.5 py-0.5 text-xs font-semibold">
@@ -248,13 +293,33 @@ const Empenhos = () => {
                       <TableCell className="font-medium">{formatCurrency(empenho.valor)}</TableCell>
                       <TableCell>{empenho.elementoDespesa}</TableCell>
                       <TableCell>
-                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                          temSaldo
-                            ? "bg-accent text-accent-foreground"
-                            : "bg-primary/10 text-primary"
-                        }`}>
-                          {temSaldo ? "Com Saldo" : "Sem Saldo"}
-                        </span>
+                        <div className="flex flex-col gap-1 items-start">
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                            temSaldo
+                              ? "bg-accent text-accent-foreground"
+                              : "bg-primary/10 text-primary"
+                          }`}>
+                            {temSaldo ? "Com Saldo" : "Sem Saldo"}
+                          </span>
+                          {acimaLimite && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex items-center gap-1 rounded-full bg-destructive/15 text-destructive px-2 py-0.5 text-[10px] font-semibold cursor-help">
+                                  <AlertTriangle className="h-3 w-3" />
+                                  Saldo alto
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-xs">
+                                <div className="space-y-1 text-xs">
+                                  <p className="font-semibold">Saldo a liquidar acima do limite</p>
+                                  <p className="opacity-90">
+                                    Saldo a liquidar de {formatCurrency(saldoLiquidar)} excede o limite configurado de {formatCurrency(saldoLimite)}.
+                                  </p>
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Tooltip>
