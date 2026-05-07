@@ -264,11 +264,12 @@ const Empenhos = () => {
                 </TableRow>
               ) : (
                 filtered.map((empenho) => {
-                  // Mock execution percentage (replace with real data later)
-                  const execucao = Math.floor(Math.random() * 101);
+                  const execucao = execucaoMap[empenho.id] ?? 0;
                   const temSaldo = execucao < 100;
+                  const saldoLiquidar = empenho.valor * (1 - execucao / 100);
+                  const acimaLimite = saldoLiquidar > saldoLimite;
                   return (
-                    <TableRow key={empenho.id}>
+                    <TableRow key={empenho.id} className={acimaLimite ? "bg-destructive/5 hover:bg-destructive/10" : undefined}>
                       <TableCell>
                         {empenho.emendaParlamentar ? (
                           <span className="inline-flex items-center rounded-full bg-destructive/10 text-destructive px-2.5 py-0.5 text-xs font-semibold">
