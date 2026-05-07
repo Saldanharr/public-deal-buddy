@@ -32,6 +32,15 @@ import { Plus, Search, Pencil, Trash2, ScrollText, Eye, AlertTriangle, X } from 
 import { useToast } from "@/hooks/use-toast";
 import ContratoDetailView, { getContratoRisk, RISK_PRIORITY, RISK_LABEL, type RiskLevel } from "@/components/ContratoDetailView";
 import { ArrowDownAZ, ArrowUpDown } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
+const RISK_REASON: Record<RiskLevel, string> = {
+  divergente: "Diferença superior a 5% entre valores empenhados e liquidados — requer revisão prioritária.",
+  pendente: "Há empenhos sem nenhuma liquidação registrada — execução ainda não iniciada.",
+  parcial: "Liquidações em andamento dentro da margem aceitável (≤5% de divergência).",
+  integral: "Valor liquidado equivale ao empenhado (≥99,5%) — execução concluída.",
+  sem_empenho: "Contrato ainda não possui empenhos vinculados.",
+};
 
 interface Processo {
   id: string;
