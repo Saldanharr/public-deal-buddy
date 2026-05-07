@@ -95,15 +95,6 @@ const Empenhos = () => {
   const [saldoLimite, setSaldoLimite] = useState<number>(50000);
   const { toast } = useToast();
 
-  // Mock execução estável por empenho (substituir por dados reais)
-  const execucaoMap = useMemo(() => {
-    const map: Record<string, number> = {};
-    empenhos.forEach((e) => {
-      map[e.id] = Math.floor(((parseInt(e.id.replace(/\D/g, "") || "1", 10) * 37) % 101));
-    });
-    return map;
-  }, [empenhos]);
-
   const filtered = empenhos.filter(
     (e) =>
       e.numero.toLowerCase().includes(search.toLowerCase()) ||
