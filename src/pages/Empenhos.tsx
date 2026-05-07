@@ -293,13 +293,33 @@ const Empenhos = () => {
                       <TableCell className="font-medium">{formatCurrency(empenho.valor)}</TableCell>
                       <TableCell>{empenho.elementoDespesa}</TableCell>
                       <TableCell>
-                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                          temSaldo
-                            ? "bg-accent text-accent-foreground"
-                            : "bg-primary/10 text-primary"
-                        }`}>
-                          {temSaldo ? "Com Saldo" : "Sem Saldo"}
-                        </span>
+                        <div className="flex flex-col gap-1 items-start">
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                            temSaldo
+                              ? "bg-accent text-accent-foreground"
+                              : "bg-primary/10 text-primary"
+                          }`}>
+                            {temSaldo ? "Com Saldo" : "Sem Saldo"}
+                          </span>
+                          {acimaLimite && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex items-center gap-1 rounded-full bg-destructive/15 text-destructive px-2 py-0.5 text-[10px] font-semibold cursor-help">
+                                  <AlertTriangle className="h-3 w-3" />
+                                  Saldo alto
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-xs">
+                                <div className="space-y-1 text-xs">
+                                  <p className="font-semibold">Saldo a liquidar acima do limite</p>
+                                  <p className="opacity-90">
+                                    Saldo a liquidar de {formatCurrency(saldoLiquidar)} excede o limite configurado de {formatCurrency(saldoLimite)}.
+                                  </p>
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Tooltip>
