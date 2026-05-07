@@ -32,6 +32,15 @@ import { Plus, Search, Pencil, Trash2, ScrollText, Eye, AlertTriangle, X } from 
 import { useToast } from "@/hooks/use-toast";
 import ContratoDetailView, { getContratoRisk, RISK_PRIORITY, RISK_LABEL, type RiskLevel } from "@/components/ContratoDetailView";
 import { ArrowDownAZ, ArrowUpDown } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
+const RISK_REASON: Record<RiskLevel, string> = {
+  divergente: "Diferença superior a 5% entre valores empenhados e liquidados — requer revisão prioritária.",
+  pendente: "Há empenhos sem nenhuma liquidação registrada — execução ainda não iniciada.",
+  parcial: "Liquidações em andamento dentro da margem aceitável (≤5% de divergência).",
+  integral: "Valor liquidado equivale ao empenhado (≥99,5%) — execução concluída.",
+  sem_empenho: "Contrato ainda não possui empenhos vinculados.",
+};
 
 interface Processo {
   id: string;
@@ -363,14 +372,30 @@ const Contratos = () => {
                         {formatDate(c.vigenciaInicio)} — {formatDate(c.vigenciaFim)}
                       </TableCell>
                       <TableCell>
-                        <span
-                          className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${riskBadgeClass(risk.level)}`}
-                          title={`Empenhado: ${formatCurrency(risk.totalEmpenhado)} • Liquidado: ${formatCurrency(risk.totalLiquidado)}${risk.totalEmpenhado > 0 ? ` • Diferença: ${risk.diferencaPercentual.toFixed(1)}%` : ""}`}
-                        >
-                          {risk.level === "divergente" && <AlertTriangle className="h-3 w-3" />}
-                          {RISK_LABEL[risk.level]}
-                          {risk.level === "divergente" && ` (${risk.diferencaPercentual.toFixed(0)}%)`}
-                        </span>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span
+                              className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium cursor-help ${riskBadgeClass(risk.level)}`}
+                            >
+                              {risk.level === "divergente" && <AlertTriangle className="h-3 w-3" />}
+                              {RISK_LABEL[risk.level]}
+                              {risk.level === "divergente" && ` (${risk.diferencaPercentual.toFixed(0)}%)`}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-xs">
+                            <div className="space-y-1 text-xs">
+                              <p className="font-semibold">{RISK_LABEL[risk.level]}</p>
+                              <p className="opacity-90">{RISK_REASON[risk.level]}</p>
+                              {risk.totalEmpenhado > 0 && (
+                                <div className="pt-1 border-t border-border/40 space-y-0.5">
+                                  <p>Empenhado: <span className="font-medium">{formatCurrency(risk.totalEmpenhado)}</span></p>
+                                  <p>Liquidado: <span className="font-medium">{formatCurrency(risk.totalLiquidado)}</span></p>
+                                  <p>Diferença: <span className="font-medium">{risk.diferencaPercentual.toFixed(1)}%</span></p>
+                                </div>
+                              )}
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
                       </TableCell>
                       <TableCell>
                         <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${c.rescindido ? "bg-destructive/10 text-destructive" : "bg-accent text-accent-foreground"}`}>
