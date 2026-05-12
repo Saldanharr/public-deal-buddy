@@ -96,12 +96,14 @@ const Empenhos = () => {
   const [saldoLimite, setSaldoLimite] = useState<number>(50000);
   const { toast } = useToast();
 
-  // Mock execução estável por empenho (substituir por dados reais)
+  // Execução real calculada a partir das liquidações (descontando estornos).
   const execucaoMap = useMemo(() => {
+    const liquidadoPorEmpenho = computeLiquidadoPorEmpenho(initialLiquidacoes, empenhos);
     const map: Record<string, number> = {};
     empenhos.forEach((e) => {
-      const seed = parseInt(e.id.replace(/\D/g, "") || "1", 10) || e.numero.length;
-      map[e.id] = (seed * 37) % 101;
+      const liquidado = liquidadoPorEmpenho[e.id] ?? 0;
+      const pct = e.valor > 0 ? (liquidado / e.valor) * 100 : 0;
+      map[e.id] = Math.min(100, Math.max(0, Math.round(pct)));
     });
     return map;
   }, [empenhos]);
