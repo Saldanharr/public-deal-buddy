@@ -28,6 +28,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import EmpenhoDetailView from "@/components/EmpenhoDetailView";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { initialLiquidacoes, computeLiquidadoPorEmpenho } from "@/data/liquidacoesMock";
 
 interface Empenho {
   id: string;
