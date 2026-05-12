@@ -53,35 +53,11 @@ const lotesMock: LoteRef[] = [
 ];
 
 // --- Types ---
-interface LoteQuantidade {
-  loteId: string;
-  quantidade: number;
-}
-
-interface Liquidacao {
-  id: string;
-  numero: string;
-  empenhoIds: string[];
-  lotesQuantidades: LoteQuantidade[];
-  descricao: string;
-  valorTotal: number;
-  dataLiquidacao: string;
-}
-
-const initialLiquidacoes: Liquidacao[] = [
-  {
-    id: "1",
-    numero: "LIQ-2024-001",
-    empenhoIds: ["1", "2"],
-    lotesQuantidades: [
-      { loteId: "1", quantidade: 10.0 },
-      { loteId: "2", quantidade: 5.5 },
-    ],
-    descricao: "Liquidação referente à entrega parcial de materiais e equipamentos",
-    valorTotal: 55000.0,
-    dataLiquidacao: "2024-07-15",
-  },
-];
+import {
+  initialLiquidacoes,
+  type Liquidacao,
+  type LoteQuantidade,
+} from "@/data/liquidacoesMock";
 
 interface LiquidacaoForm {
   numero: string;
